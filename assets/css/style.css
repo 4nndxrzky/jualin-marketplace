@@ -363,26 +363,42 @@ button {
 .category-nav {
   background-color: var(--white);
   border-bottom: 1px solid var(--gray-200);
-  overflow-x: auto;
+  position: relative;
+  z-index: 95;
 }
 
-.category-nav::-webkit-scrollbar {
-  display: none;
+.category-nav-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: relative;
 }
 
 .category-nav-list {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   padding: 8px 0;
   white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+
+.category-nav-list::-webkit-scrollbar {
+  display: none;
+}
+
+.category-nav-list li {
+  flex-shrink: 0;
 }
 
 .category-nav-list li a {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--text-secondary);
@@ -407,7 +423,173 @@ button {
 }
 
 .category-nav-list li a .cat-icon {
+  font-size: 1.05rem;
+}
+
+/* Category More (Titik Tiga) Button */
+.category-more-wrapper {
+  flex-shrink: 0;
+  padding: 8px 0;
+}
+
+.category-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--gray-100);
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.category-more-btn:hover,
+.category-more-btn.active {
+  background-color: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+.category-more-btn .more-arrow {
+  font-size: 0.75rem;
+  transition: transform 0.25s ease;
+}
+
+.category-more-btn.active .more-arrow {
+  transform: rotate(180deg);
+}
+
+/* Category Extended Drawer (Panel Extend Kebawah) */
+.category-extended-drawer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-top: 1px solid var(--gray-100);
+  box-shadow: var(--shadow-lg);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  padding: 24px;
+  z-index: 1000;
+  display: none;
+}
+
+.category-extended-drawer.show {
+  display: block;
+  animation: drawerSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes drawerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.category-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--gray-200);
+}
+
+.category-drawer-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.category-drawer-header h3 i {
+  color: var(--primary-light);
+}
+
+.category-drawer-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+
+.category-drawer-close:hover {
+  background-color: var(--gray-100);
+  color: var(--danger);
+}
+
+.category-drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.category-drawer-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background-color: var(--gray-50);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all var(--transition);
+}
+
+.category-drawer-card:hover {
+  background-color: rgba(35, 229, 219, 0.08);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.category-drawer-card.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.category-drawer-card .drawer-cat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--white);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.1rem;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.category-drawer-card.active .drawer-cat-icon {
+  background-color: var(--accent);
+  color: var(--primary);
+}
+
+.category-drawer-card .drawer-cat-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 /* Breadcrumb Navigation */

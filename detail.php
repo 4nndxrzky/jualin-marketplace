@@ -1,23 +1,35 @@
 <?php
-    session_start();
-    require_once __DIR__ . '/koneksi.php';
+session_start();
+require_once __DIR__ . '/koneksi.php';
 
-    $flashSuccess = $_SESSION['flash_success'] ?? null;
-    unset($_SESSION['flash_success']);
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+unset($_SESSION['flash_success']);
 
-    // Ambil kategori secara dinamis dari tabel categories
-    $stmtCat    = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
-    $categories = $stmtCat->fetchAll();
+// --------------------------------------------------------------------------
+// 1. Ambil Kategori & Lokasi Dinamis dari Database
+// --------------------------------------------------------------------------
+$stmtCat    = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+$categories = $stmtCat->fetchAll();
 
-    // Ambil data iklan berdasarkan parameter ID di URL
-    $adId     = isset($_GET['id']) ? (int) $_GET['id'] : 1;
-    $ad       = null;
-    $adImages = [];
+$stmtLoc = $pdo->query("
+    SELECT DISTINCT location 
+    FROM ads 
+    WHERE location IS NOT NULL AND TRIM(location) != '' 
+    ORDER BY location ASC
+");
+$locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
 
-    if ($adId > 0) {
+// --------------------------------------------------------------------------
+// 2. Ambil Data Iklan Berdasarkan Parameter ID di URL
+// --------------------------------------------------------------------------
+$adId = isset($_GET['id']) && is_numeric($_GET['id']) ? (int)$_GET['id'] : 0;
+$ad   = null;
+
+if ($adId > 0) {
     $stmtAd = $pdo->prepare("
         SELECT a.*, c.name AS category_name, c.icon AS category_icon,
-               u.name AS seller_name, u.email AS seller_email, u.created_at AS seller_joined
+               u.id AS seller_user_id, u.name AS seller_name, u.email AS seller_email, 
+               u.whatsapp AS seller_whatsapp, u.created_at AS seller_joined
         FROM ads a
         LEFT JOIN categories c ON a.category_id = c.id
         LEFT JOIN users u ON a.user_id = u.id
@@ -26,33 +38,75 @@
     ");
     $stmtAd->execute([$adId]);
     $ad = $stmtAd->fetch();
+}
 
-    if ($ad) {
-        $stmtImgs = $pdo->prepare("SELECT * FROM ad_images WHERE ad_id = ? ORDER BY id ASC");
-        $stmtImgs->execute([$adId]);
-        $adImages = $stmtImgs->fetchAll();
-    }
-    }
+// Fallback dinamis jika iklan tidak ditemukan atau parameter id tidak diberikan
+if (!$ad) {
+    $stmtFallback = $pdo->query("
+        SELECT a.*, c.name AS category_name, c.icon AS category_icon,
+               u.id AS seller_user_id, u.name AS seller_name, u.email AS seller_email, 
+               u.whatsapp AS seller_whatsapp, u.created_at AS seller_joined
+        FROM ads a
+        LEFT JOIN categories c ON a.category_id = c.id
+        LEFT JOIN users u ON a.user_id = u.id
+        ORDER BY a.id DESC
+        LIMIT 1
+    ");
+    $ad = $stmtFallback->fetch();
+}
 
-    // Fallback data contoh jika iklan tidak ditemukan
-    if (! $ad) {
-    $ad = [
-        'id'            => 1,
-        'title'         => 'Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat',
-        'price'         => 185000000,
-        'location'      => 'Jakarta Selatan',
-        'description'   => "Dijual cepat mobil keluarga idaman: Toyota Avanza 1.3 G Manual tahun 2020 warna Putih Mutiara.\n\nKondisi Kendaraan:\n- Odometer asli 38.500 km (slow moving), service record lengkap berkala di bengkel resmi Toyota Astra Motor.\n- Mesin halus, kering, no rembes, tarikan enteng, dan bensin sangat irit.\n- AC double blower sangat dingin dan berfungsi normal.\n- Kaki-kaki senyap tanpa bunyi, ban 4 buah masih tebal 85% (Bridgestone) + ban serep belum pernah turun.\n- Interior original fabric bersih, wangi, tidak merokok. Headunit touchscreen support Bluetooth & USB.\n- Bodi mulus 95%, cat original pabrik, bebas tabrakan besar dan bebas banjir.\n\nKelengkapan Dokumen & Legalitas:\n- STNK, BPKB, dan Faktur Pembelian asli lengkap di tangan.\n- Buku manual, buku servis, dan kunci kontak serep lengkap.\n- Pajak hidup panjang sampai Oktober 2026, plat B Jakarta Selatan (Ganjil).\n\nHarga nego santai dan sopan setelah cek unit di lokasi.",
-        'category_name' => 'Mobil',
-        'category_icon' => 'fa-solid fa-car',
-        'seller_name'   => 'Rizky Pratama',
-        'seller_email'  => 'rizky@email.com',
-        'seller_joined' => '2024-01-15 10:00:00',
-        'created_at'    => '2026-09-20 14:30:00',
-    ];
-    }
+// Ambil seluruh foto iklan dari tabel ad_images
+$adImages = [];
+if ($ad) {
+    $stmtImgs = $pdo->prepare("SELECT * FROM ad_images WHERE ad_id = ? ORDER BY id ASC");
+    $stmtImgs->execute([$ad['id']]);
+    $adImages = $stmtImgs->fetchAll();
+}
 
-    $pageTitle      = htmlspecialchars($ad['title']) . " — OLX Clone";
-    $priceFormatted = "Rp " . number_format($ad['price'], 0, ',', '.');
+// --------------------------------------------------------------------------
+// 3. Format Kontak WhatsApp & Telepon Penjual (Dinamis dari Kolom whatsapp)
+// --------------------------------------------------------------------------
+$sellerWa = trim($ad['seller_whatsapp'] ?? '');
+if (empty($sellerWa)) {
+    $sellerWa = '085693557069'; // Fallback default nomor penjual jika belum diset
+}
+
+// Format nomor internasional untuk link wa.me (diawali 62 dan angka saja)
+$waClean = preg_replace('/[^0-9]/', '', $sellerWa);
+if (str_starts_with($waClean, '0')) {
+    $waClean = '62' . substr($waClean, 1);
+} elseif (str_starts_with($waClean, '8')) {
+    $waClean = '62' . $waClean;
+}
+
+// Format tampilan lokal yang rapi untuk tombol Tampilkan Telepon (contoh: 0856-9355-7069)
+$waDisplay = $sellerWa;
+$digitsOnly = preg_replace('/[^0-9]/', '', $sellerWa);
+if (strlen($digitsOnly) >= 10 && preg_match('/^(\d{4})(\d{4})(\d{3,5})$/', $digitsOnly, $matches)) {
+    $waDisplay = "{$matches[1]}-{$matches[2]}-{$matches[3]}";
+}
+
+// Pesan pra-isi WhatsApp yang sopan & menyertakan rincian iklan
+$waMessage = "Halo " . ($ad['seller_name'] ?? 'Penjual') . ", saya tertarik dengan iklan \"" . $ad['title'] . "\" (ID: #" . str_pad((string)$ad['id'], 5, '0', STR_PAD_LEFT) . ") di OLX Clone seharga Rp " . number_format($ad['price'], 0, ',', '.') . ". Apakah masih tersedia?";
+$waUrl = "https://wa.me/{$waClean}?text=" . rawurlencode($waMessage);
+
+// --------------------------------------------------------------------------
+// 4. Query Iklan Terkait Dinamis (Related Ads dari Database)
+// --------------------------------------------------------------------------
+$stmtRelated = $pdo->prepare("
+    SELECT a.*, c.name AS category_name, c.icon AS category_icon,
+           (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
+    FROM ads a
+    LEFT JOIN categories c ON a.category_id = c.id
+    WHERE a.id != ?
+    ORDER BY (a.category_id = ?) DESC, a.created_at DESC
+    LIMIT 4
+");
+$stmtRelated->execute([$ad['id'] ?? 0, $ad['category_id'] ?? 0]);
+$relatedAds = $stmtRelated->fetchAll();
+
+$pageTitle      = htmlspecialchars($ad['title'] ?? 'Detail Iklan', ENT_QUOTES, 'UTF-8') . " — OLX Clone";
+$priceFormatted = "Rp " . number_format($ad['price'] ?? 0, 0, ',', '.');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -64,21 +118,21 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS (DINAMIS) ==================== -->
-  <title><?php echo $pageTitle ?></title>
-  <meta name="description" content="<?php echo htmlspecialchars(mb_substr(strip_tags($ad['description']), 0, 160)) ?>">
-  <meta name="keywords" content="<?php echo htmlspecialchars($ad['title']) ?>, jual beli online, OLX Clone">
-  <meta name="author" content="<?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual OLX Clone') ?>">
+  <title><?php echo $pageTitle; ?></title>
+  <meta name="description" content="<?php echo htmlspecialchars(mb_substr(strip_tags($ad['description'] ?? ''), 0, 160), ENT_QUOTES, 'UTF-8'); ?>">
+  <meta name="keywords" content="<?php echo htmlspecialchars($ad['title'] ?? '', ENT_QUOTES, 'UTF-8'); ?>, jual beli online, OLX Clone">
+  <meta name="author" content="<?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual OLX Clone', ENT_QUOTES, 'UTF-8'); ?>">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://olxclone.local/detail.php?id=<?php echo (int) $ad['id'] ?>">
+  <link rel="canonical" href="https://olxclone.local/detail.php?id=<?php echo (int)($ad['id'] ?? 1); ?>">
 
   <!-- ==================== OPEN GRAPH ==================== -->
   <meta property="og:type" content="product">
-  <meta property="og:title" content="<?php echo $pageTitle ?>">
-  <meta property="og:description" content="<?php echo htmlspecialchars(mb_substr(strip_tags($ad['description']), 0, 120)) ?>">
-  <meta property="og:url" content="https://olxclone.local/detail.php?id=<?php echo (int) $ad['id'] ?>">
+  <meta property="og:title" content="<?php echo $pageTitle; ?>">
+  <meta property="og:description" content="<?php echo htmlspecialchars(mb_substr(strip_tags($ad['description'] ?? ''), 0, 120), ENT_QUOTES, 'UTF-8'); ?>">
+  <meta property="og:url" content="https://olxclone.local/detail.php?id=<?php echo (int)($ad['id'] ?? 1); ?>">
   <meta property="og:site_name" content="OLX Clone">
   <meta property="og:locale" content="id_ID">
-  <meta property="product:price:amount" content="<?php echo (float) $ad['price'] ?>">
+  <meta property="product:price:amount" content="<?php echo (float)($ad['price'] ?? 0); ?>">
   <meta property="product:price:currency" content="IDR">
 
   <!-- ==================== FAVICON ==================== -->
@@ -86,7 +140,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
 
-  <!-- ==================== FONT AWESOME ICONS ==================== -->
+  <!-- ==================== FONT AWESOME ICONS (NO EMOJI) ==================== -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- ==================== CSS EXTERNAL ==================== -->
@@ -96,7 +150,7 @@
 <body>
 
   <!-- ================================================================
-       HEADER — Logo, Search, Lokasi, Auth (Konsisten dengan index.php)
+       HEADER — Logo, Search, Lokasi, Auth
        ================================================================ -->
   <header class="site-header" role="banner">
     <div class="container">
@@ -107,15 +161,29 @@
           OLX<span>Clone</span>
         </a>
 
-        <!-- Lokasi Selector -->
-        <button class="location-selector" aria-label="Pilih lokasi" type="button">
-          <i class="fa-solid fa-location-dot"></i> <span><?php echo htmlspecialchars($ad['location'] ?? 'Indonesia') ?></span> <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
-        </button>
+        <!-- Lokasi Selector Dinamis -->
+        <div class="location-dropdown-wrapper">
+          <button class="location-selector" aria-label="Pilih lokasi" type="button" aria-haspopup="true" aria-expanded="false">
+            <i class="fa-solid fa-location-dot"></i>
+            <span><?php echo htmlspecialchars($ad['location'] ?? 'Indonesia', ENT_QUOTES, 'UTF-8'); ?></span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
+          </button>
+          <div class="location-menu" role="menu">
+            <a href="index.php" class="location-item">
+              <i class="fa-solid fa-earth-asia"></i> Semua Indonesia
+            </a>
+            <?php foreach ($locations as $loc): ?>
+              <a href="index.php?loc=<?php echo urlencode($loc); ?>" class="location-item <?php echo (($ad['location'] ?? '') === $loc) ? 'active' : ''; ?>">
+                <i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($loc, ENT_QUOTES, 'UTF-8'); ?>
+              </a>
+            <?php endforeach; ?>
+          </div>
+        </div>
 
         <!-- Search Bar -->
-        <form class="search-form" action="search.php" method="GET" role="search" aria-label="Cari iklan">
+        <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
           <label for="search-input" class="sr-only">Cari di OLX Clone</label>
-          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, laptop, dan lainnya..." autocomplete="off">
+          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
 
@@ -124,14 +192,14 @@
           <?php if (isset($_SESSION['user_id'])): ?>
             <div class="user-menu-wrapper">
               <button type="button" class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
-                <span class="user-avatar-sm"><?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></span>
-                <span class="user-menu-name"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="user-avatar-sm"><?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?></span>
+                <span class="user-menu-name"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8'); ?></span>
                 <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
               </button>
               <div class="user-dropdown" role="menu">
                 <div style="padding: 10px 16px; border-bottom: 1px solid var(--gray-200);">
-                  <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></strong>
-                  <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($_SESSION['user_email'], ENT_QUOTES, 'UTF-8') ?></small>
+                  <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                  <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($_SESSION['user_email'], ENT_QUOTES, 'UTF-8'); ?></small>
                 </div>
                 <a href="pasang-iklan.php" class="dropdown-item" role="menuitem">
                   <i class="fa-solid fa-box-open"></i> Iklan Saya
@@ -156,33 +224,14 @@
 
 
   <!-- ================================================================
-       NAVIGASI KATEGORI (Konsisten dengan index.php)
-       ================================================================ -->
-  <nav class="category-nav" aria-label="Navigasi kategori">
-    <div class="container">
-      <ul class="category-nav-list">
-        <?php foreach ($categories as $cat): ?>
-          <li>
-            <a href="kategori.php?c=<?php echo (int) $cat['id'] ?>">
-              <span class="cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']) ?>"></i></span>
-              <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?>
-            </a>
-          </li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
-  </nav>
-
-
-  <!-- ================================================================
-       BREADCRUMB (SEO & User Navigation)
+       BREADCRUMB (Kategori Navbar di Halaman Detail Ditiadakan)
        ================================================================ -->
   <div class="container">
     <nav class="breadcrumb-nav" aria-label="Breadcrumb">
       <ol class="breadcrumb">
         <li><a href="index.php">Beranda</a></li>
-        <li><a href="kategori.php?c=<?php echo (int) ($ad['category_id'] ?? 1) ?>"><?php echo htmlspecialchars($ad['category_name'] ?? 'Kategori') ?></a></li>
-        <li aria-current="page"><?php echo htmlspecialchars($ad['title']) ?></li>
+        <li><a href="index.php?c=<?php echo (int)($ad['category_id'] ?? 1); ?>"><?php echo htmlspecialchars($ad['category_name'] ?? 'Kategori', ENT_QUOTES, 'UTF-8'); ?></a></li>
+        <li aria-current="page"><?php echo htmlspecialchars($ad['title'] ?? 'Detail Iklan', ENT_QUOTES, 'UTF-8'); ?></li>
       </ol>
     </nav>
   </div>
@@ -191,12 +240,12 @@
   <!-- ================================================================
        NOTIFIKASI FLASH SUKSES
        ================================================================ -->
-  <?php if (! empty($flashSuccess)): ?>
+  <?php if (!empty($flashSuccess)): ?>
     <div class="container" style="padding-top: 10px;">
       <div class="alert alert-success" role="alert">
         <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
         <div class="alert-content">
-          <?php echo htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8') ?>
+          <?php echo htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8'); ?>
         </div>
         <button type="button" class="alert-close" aria-label="Tutup notifikasi">&times;</button>
       </div>
@@ -218,40 +267,28 @@
 
           <!-- Foto Utama -->
           <figure class="gallery-main">
-            <?php if (! empty($adImages) && file_exists(__DIR__ . '/' . $adImages[0]['image_path'])): ?>
-              <img src="<?php echo htmlspecialchars($adImages[0]['image_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8') ?>" id="main-gallery-img" style="width: 100%; max-height: 480px; object-fit: contain; background: #000;">
+            <?php if (!empty($adImages) && file_exists(__DIR__ . '/' . $adImages[0]['image_path'])): ?>
+              <img src="<?php echo htmlspecialchars($adImages[0]['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($ad['title'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" id="main-gallery-img" style="width: 100%; max-height: 480px; object-fit: contain; background: #000;">
             <?php else: ?>
               <div class="gallery-placeholder" aria-hidden="true">
-                <i class="<?php echo ! empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open' ?>" style="font-size: 5rem; color: var(--primary);"></i>
+                <i class="<?php echo !empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon'], ENT_QUOTES, 'UTF-8') : 'fa-solid fa-box-open'; ?>" style="font-size: 5rem; color: var(--primary);"></i>
                 <span>Foto Tampilan Produk</span>
               </div>
             <?php endif; ?>
             <span class="ad-card-badge">Aktif</span>
             <span class="gallery-counter" aria-label="Jumlah foto">
-              <i class="fa-solid fa-camera"></i> 1 / <?php echo max(1, count($adImages)) ?>
+              <i class="fa-solid fa-camera"></i> 1 / <?php echo max(1, count($adImages)); ?>
             </span>
           </figure>
 
           <!-- Thumbnail Strip (ad_images table) -->
-          <?php if (! empty($adImages)): ?>
+          <?php if (!empty($adImages)): ?>
             <ul class="gallery-thumbs" role="tablist" aria-label="Thumbnail foto iklan">
               <?php foreach ($adImages as $idx => $img): ?>
-                <li class="gallery-thumb-item <?php echo $idx === 0 ? 'active' : '' ?>" role="tab" aria-selected="<?php echo $idx === 0 ? 'true' : 'false' ?>" tabindex="0" title="Foto <?php echo $idx + 1 ?>">
-                  <img src="<?php echo htmlspecialchars($img['image_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Thumbnail <?php echo $idx + 1 ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                <li class="gallery-thumb-item <?php echo ($idx === 0) ? 'active' : ''; ?>" role="tab" aria-selected="<?php echo ($idx === 0) ? 'true' : 'false'; ?>" tabindex="0" title="Foto <?php echo $idx + 1; ?>">
+                  <img src="<?php echo htmlspecialchars($img['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="Thumbnail <?php echo $idx + 1; ?>" style="width: 100%; height: 100%; object-fit: cover;">
                 </li>
               <?php endforeach; ?>
-            </ul>
-          <?php else: ?>
-            <ul class="gallery-thumbs" role="tablist" aria-label="Thumbnail foto iklan">
-              <li class="gallery-thumb-item active" role="tab" aria-selected="true" tabindex="0" title="Foto 1: Utama">
-                <i class="<?php echo ! empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open' ?>"></i>
-              </li>
-              <li class="gallery-thumb-item" role="tab" aria-selected="false" tabindex="-1" title="Foto 2: Tambahan">
-                <i class="fa-solid fa-image"></i>
-              </li>
-              <li class="gallery-thumb-item" role="tab" aria-selected="false" tabindex="-1" title="Foto 3: Tambahan">
-                <i class="fa-solid fa-image"></i>
-              </li>
             </ul>
           <?php endif; ?>
 
@@ -261,18 +298,18 @@
         <!-- ===== 2. TOOLBAR DETAIL (Bagikan, Laporkan, Wishlist) ===== -->
         <div class="detail-toolbar">
           <div class="detail-toolbar-left">
-            <span>ID Iklan: <strong>#<?php echo str_pad((string)$ad['id'], 5, '0', STR_PAD_LEFT) ?></strong></span>
-            <span>•</span>
-            <time datetime="<?php echo substr($ad['created_at'], 0, 10) ?>">Diposting: <?php echo date('d F Y', strtotime($ad['created_at'])) ?></time>
+            <span>ID Iklan: <strong>#<?php echo str_pad((string)($ad['id'] ?? 0), 5, '0', STR_PAD_LEFT); ?></strong></span>
+            <span>&bull;</span>
+            <time datetime="<?php echo substr($ad['created_at'] ?? '2026-09-20', 0, 10); ?>">Diposting: <?php echo date('d F Y', strtotime($ad['created_at'] ?? 'now')); ?></time>
           </div>
           <div class="detail-toolbar-right">
-            <button type="button" class="btn-icon-action" aria-label="Bagikan iklan ini">
+            <button type="button" class="btn-icon-action" aria-label="Bagikan iklan ini" onclick="if(navigator.share){navigator.share({title:document.title,url:window.location.href});}else{navigator.clipboard.writeText(window.location.href);alert('Tautan iklan berhasil disalin!');}">
               <i class="fa-solid fa-share-nodes"></i> Bagikan
             </button>
-            <button type="button" class="btn-icon-action" aria-label="Simpan ke favorit">
+            <button type="button" class="btn-icon-action" aria-label="Simpan ke favorit" onclick="const i=this.querySelector('i');i.classList.toggle('fa-regular');i.classList.toggle('fa-solid');i.style.color=i.classList.contains('fa-solid')?'var(--danger)':'';">
               <i class="fa-regular fa-heart"></i> Favorit
             </button>
-            <button type="button" class="btn-icon-action" aria-label="Laporkan iklan ini">
+            <button type="button" class="btn-icon-action" aria-label="Laporkan iklan ini" onclick="alert('Terima kasih, laporan Anda telah kami terima untuk ditinjau tim moderasi.');">
               <i class="fa-regular fa-flag"></i> Laporkan
             </button>
           </div>
@@ -286,15 +323,15 @@
           <dl class="specs-grid">
             <div class="spec-item">
               <dt>Kategori</dt>
-              <dd><a href="kategori.php?c=<?php echo (int) ($ad['category_id'] ?? 1) ?>"><?php echo htmlspecialchars($ad['category_name'] ?? 'Umum') ?></a></dd>
+              <dd><a href="index.php?c=<?php echo (int)($ad['category_id'] ?? 1); ?>"><?php echo htmlspecialchars($ad['category_name'] ?? 'Umum', ENT_QUOTES, 'UTF-8'); ?></a></dd>
             </div>
             <div class="spec-item">
               <dt>Harga</dt>
-              <dd><?php echo $priceFormatted ?></dd>
+              <dd><?php echo $priceFormatted; ?></dd>
             </div>
             <div class="spec-item">
               <dt>Lokasi</dt>
-              <dd><?php echo htmlspecialchars($ad['location'] ?? 'Indonesia') ?></dd>
+              <dd><?php echo htmlspecialchars($ad['location'] ?? 'Indonesia', ENT_QUOTES, 'UTF-8'); ?></dd>
             </div>
             <div class="spec-item">
               <dt>Status Listing</dt>
@@ -302,11 +339,11 @@
             </div>
             <div class="spec-item">
               <dt>Penjual</dt>
-              <dd><?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual Terpercaya') ?></dd>
+              <dd><?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual Terpercaya', ENT_QUOTES, 'UTF-8'); ?></dd>
             </div>
             <div class="spec-item">
               <dt>Tanggal Pasang</dt>
-              <dd><?php echo date('d M Y', strtotime($ad['created_at'])) ?></dd>
+              <dd><?php echo date('d M Y', strtotime($ad['created_at'] ?? 'now')); ?></dd>
             </div>
           </dl>
         </section>
@@ -317,7 +354,7 @@
           <h2 id="heading-desc" class="detail-box-title">Deskripsi Lengkap</h2>
 
           <div class="description-body">
-            <?php echo nl2br(htmlspecialchars($ad['description'])) ?>
+            <?php echo nl2br(htmlspecialchars($ad['description'] ?? '', ENT_QUOTES, 'UTF-8')); ?>
           </div>
         </section>
 
@@ -328,11 +365,11 @@
 
           <div class="location-box">
             <p class="location-info">
-              <i class="fa-solid fa-location-dot"></i> <span><?php echo htmlspecialchars($ad['location'] ?? 'Indonesia') ?></span>
+              <i class="fa-solid fa-location-dot"></i> <span><?php echo htmlspecialchars($ad['location'] ?? 'Indonesia', ENT_QUOTES, 'UTF-8'); ?></span>
             </p>
             <div class="map-placeholder" aria-label="Peta lokasi perkiraan">
               <i class="fa-solid fa-map-location-dot" style="font-size: 2.5rem; color: var(--primary);"></i>
-              <p>Area Perkiraan: <?php echo htmlspecialchars($ad['location'] ?? 'Indonesia') ?></p>
+              <p>Area Perkiraan: <?php echo htmlspecialchars($ad['location'] ?? 'Indonesia', ENT_QUOTES, 'UTF-8'); ?></p>
               <small>(Lokasi presisi akan diberikan penjual saat janjian COD)</small>
             </div>
           </div>
@@ -346,46 +383,46 @@
 
         <!-- Card 1: Harga & Judul -->
         <div class="sidebar-card sidebar-price-card">
-          <p class="price-amount"><?php echo $priceFormatted ?></p>
-          <h1 class="ad-title"><?php echo htmlspecialchars($ad['title']) ?></h1>
+          <p class="price-amount"><?php echo $priceFormatted; ?></p>
+          <h1 class="ad-title"><?php echo htmlspecialchars($ad['title'] ?? 'Iklan', ENT_QUOTES, 'UTF-8'); ?></h1>
           <div class="ad-meta-info">
-            <span><i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($ad['location'] ?? 'Indonesia') ?></span>
-            <time datetime="<?php echo substr($ad['created_at'], 0, 10) ?>"><?php echo date('d M Y', strtotime($ad['created_at'])) ?></time>
+            <span><i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($ad['location'] ?? 'Indonesia', ENT_QUOTES, 'UTF-8'); ?></span>
+            <time datetime="<?php echo substr($ad['created_at'] ?? '2026-09-20', 0, 10); ?>"><?php echo date('d M Y', strtotime($ad['created_at'] ?? 'now')); ?></time>
           </div>
         </div>
 
-        <!-- Card 2: Profil Penjual (users table) -->
+        <!-- Card 2: Profil Penjual (users table + nomor whatsapp) -->
         <div class="sidebar-card seller-card">
           <div class="seller-profile">
             <div class="seller-avatar" aria-hidden="true">
-              <?php echo strtoupper(substr($ad['seller_name'] ?? 'P', 0, 1)) ?>
+              <?php echo strtoupper(substr($ad['seller_name'] ?? 'P', 0, 1)); ?>
             </div>
             <div class="seller-info">
               <h3 class="seller-name">
-                <?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual Terpercaya') ?>
+                <?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual Terpercaya', ENT_QUOTES, 'UTF-8'); ?>
                 <span class="badge badge-verified" title="Identitas terverifikasi">
                   <i class="fa-solid fa-circle-check"></i> Terverifikasi
                 </span>
               </h3>
-              <p class="seller-member-since">Member sejak <?php echo ! empty($ad['seller_joined']) ? date('M Y', strtotime($ad['seller_joined'])) : '2024' ?></p>
+              <p class="seller-member-since">Member sejak <?php echo !empty($ad['seller_joined']) ? date('M Y', strtotime($ad['seller_joined'])) : '2024'; ?></p>
             </div>
           </div>
 
-          <!-- Aksi Kontak -->
+          <!-- Aksi Kontak Dinamis (WhatsApp & Telepon dari database) -->
           <div class="seller-actions">
-            <a href="#chat" class="btn btn-solid-primary btn-block">
-              <i class="fa-solid fa-comments"></i> Chat Penjual
-            </a>
-            <a href="https://wa.me/6281234567890?text=Halo%20<?php echo urlencode($ad['seller_name'] ?? 'Penjual') ?>,%20saya%20tertarik%20dengan%20iklan%20<?php echo urlencode($ad['title']) ?>%20di%20OLX%20Clone" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-block">
+            <a href="<?php echo htmlspecialchars($waUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-block">
               <i class="fa-brands fa-whatsapp"></i> Hubungi via WhatsApp
             </a>
-            <button type="button" class="btn btn-outline btn-block" onclick="this.innerHTML='<i class=\'fa-solid fa-phone\'></i> 0812-3456-7890'">
-              <i class="fa-solid fa-phone"></i> Tampilkan Telepon
+            <button type="button" class="btn btn-outline btn-block" id="btn-show-phone" data-phone="<?php echo htmlspecialchars($waDisplay, ENT_QUOTES, 'UTF-8'); ?>" data-phone-raw="<?php echo htmlspecialchars($sellerWa, ENT_QUOTES, 'UTF-8'); ?>">
+              <i class="fa-solid fa-phone"></i> <span>Tampilkan Telepon</span>
             </button>
+            <a href="<?php echo htmlspecialchars($waUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-solid-primary btn-block">
+              <i class="fa-solid fa-comments"></i> Chat Penjual
+            </a>
           </div>
 
-          <a href="index.php" class="seller-profile-link">
-            Lihat semua iklan penjual ini →
+          <a href="index.php?q=<?php echo urlencode($ad['seller_name'] ?? ''); ?>" class="seller-profile-link">
+            Lihat semua iklan penjual ini &rarr;
           </a>
         </div>
 
@@ -399,7 +436,7 @@
             <li>Ketemuan langsung dengan penjual di tempat umum dan ramai.</li>
             <li>Periksa kondisi fisik barang dan kelengkapan dokumen asli.</li>
             <li>Jangan pernah mengirimkan uang muka (DP) sebelum bertemu.</li>
-            <li>Waspada terhadap harga yang jauh di bawah pasaran.</li>
+            <li>Waspada terhadap harga yang jauh di bawah pasaran wajar.</li>
           </ul>
         </div>
 
@@ -409,97 +446,51 @@
 
 
     <!-- ================================================================
-         IKLAN TERKAIT (RELATED ADS)
+         IKLAN TERKAIT (RELATED ADS DARI DATABASE - 0 HARDCODED)
          ================================================================ -->
-    <section class="section" aria-labelledby="heading-related">
-      <div class="section-header">
-        <h2 id="heading-related">Iklan Terkait Lainnya</h2>
-        <a href="kategori.php?c=<?php echo (int) ($ad['category_id'] ?? 1) ?>">Lihat Lainnya →</a>
-      </div>
+    <?php if (!empty($relatedAds)): ?>
+      <section class="section" aria-labelledby="heading-related">
+        <div class="section-header">
+          <h2 id="heading-related">Iklan Terkait Lainnya</h2>
+          <a href="index.php?c=<?php echo (int)($ad['category_id'] ?? 1); ?>">Lihat Lainnya <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
 
-      <div class="ad-grid">
-
-        <!-- Card 1 -->
-        <article class="ad-card">
-          <a href="detail.php?id=1" aria-label="Honda Brio Satya - Rp 142.000.000">
-            <div class="ad-card-image">
-              <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-car"></i></div>
-              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-            </div>
-            <div class="ad-card-body">
-              <p class="ad-card-price">Rp 142.000.000</p>
-              <h3 class="ad-card-title">Honda Brio Satya E CVT 2021 Abu-abu Metalik KM Rendah</h3>
-              <div class="ad-card-meta">
-                <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Jakarta Barat</span>
-                <time datetime="2026-09-18">18 Sep</time>
-              </div>
-            </div>
-          </a>
-        </article>
-
-        <!-- Card 2 -->
-        <article class="ad-card">
-          <a href="detail.php?id=2" aria-label="Mitsubishi Xpander Ultimate - Rp 215.000.000">
-            <div class="ad-card-image">
-              <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-car-side"></i></div>
-              <span class="ad-card-badge">Baru</span>
-              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-            </div>
-            <div class="ad-card-body">
-              <p class="ad-card-price">Rp 215.000.000</p>
-              <h3 class="ad-card-title">Mitsubishi Xpander Ultimate AT 2020 Hitam Full Original</h3>
-              <div class="ad-card-meta">
-                <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Tangerang</span>
-                <time datetime="2026-09-17">17 Sep</time>
-              </div>
-            </div>
-          </a>
-        </article>
-
-        <!-- Card 3 -->
-        <article class="ad-card">
-          <a href="detail.php?id=3" aria-label="Daihatsu Sigra 1.2 R - Rp 128.000.000">
-            <div class="ad-card-image">
-              <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-car"></i></div>
-              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-            </div>
-            <div class="ad-card-body">
-              <p class="ad-card-price">Rp 128.000.000</p>
-              <h3 class="ad-card-title">Daihatsu Sigra 1.2 R Deluxe MT 2022 Silver Siap Pakai</h3>
-              <div class="ad-card-meta">
-                <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Depok</span>
-                <time datetime="2026-09-16">16 Sep</time>
-              </div>
-            </div>
-          </a>
-        </article>
-
-        <!-- Card 4 -->
-        <article class="ad-card">
-          <a href="detail.php?id=4" aria-label="Suzuki Ertiga GL - Rp 165.000.000">
-            <div class="ad-card-image">
-              <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-car-side"></i></div>
-              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-            </div>
-            <div class="ad-card-body">
-              <p class="ad-card-price">Rp 165.000.000</p>
-              <h3 class="ad-card-title">Suzuki Ertiga GL Automatic 2019 Merah Maroon Antik</h3>
-              <div class="ad-card-meta">
-                <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Bekasi</span>
-                <time datetime="2026-09-15">15 Sep</time>
-              </div>
-            </div>
-          </a>
-        </article>
-
-      </div>
-    </section>
+        <div class="ad-grid">
+          <?php foreach ($relatedAds as $relAd): ?>
+            <article class="ad-card">
+              <a href="detail.php?id=<?php echo (int)$relAd['id']; ?>" aria-label="<?php echo htmlspecialchars($relAd['title'], ENT_QUOTES, 'UTF-8'); ?> - Rp <?php echo number_format($relAd['price'], 0, ',', '.'); ?>">
+                <div class="ad-card-image">
+                  <?php if (!empty($relAd['image_path']) && file_exists(__DIR__ . '/' . $relAd['image_path'])): ?>
+                    <img src="<?php echo htmlspecialchars($relAd['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($relAd['title'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy">
+                  <?php else: ?>
+                    <div class="img-placeholder" aria-hidden="true">
+                      <i class="<?php echo !empty($relAd['category_icon']) ? htmlspecialchars($relAd['category_icon'], ENT_QUOTES, 'UTF-8') : 'fa-solid fa-box-open'; ?>"></i>
+                    </div>
+                  <?php endif; ?>
+                  <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">
+                    <i class="fa-regular fa-heart"></i>
+                  </button>
+                </div>
+                <div class="ad-card-body">
+                  <p class="ad-card-price">Rp <?php echo number_format($relAd['price'], 0, ',', '.'); ?></p>
+                  <h3 class="ad-card-title"><?php echo htmlspecialchars($relAd['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                  <div class="ad-card-meta">
+                    <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($relAd['location'], ENT_QUOTES, 'UTF-8'); ?></span>
+                    <time datetime="<?php echo substr($relAd['created_at'], 0, 10); ?>"><?php echo date('d M', strtotime($relAd['created_at'])); ?></time>
+                  </div>
+                </div>
+              </a>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      </section>
+    <?php endif; ?>
 
   </main>
 
 
   <!-- ================================================================
-       FOOTER (Konsisten dengan index.php)
+       FOOTER
        ================================================================ -->
   <footer class="site-footer" role="contentinfo">
     <div class="container">
@@ -517,14 +508,17 @@
           </ul>
         </div>
 
-        <!-- Kolom 2: Kategori Populer -->
+        <!-- Kolom 2: Kategori Populer (Dinamis dari Tabel categories) -->
         <div class="footer-col">
           <h3>Kategori Populer</h3>
           <ul>
-            <li><a href="kategori.php?c=1">Mobil Bekas</a></li>
-            <li><a href="kategori.php?c=2">Motor Bekas</a></li>
-            <li><a href="kategori.php?c=3">Rumah & Apartemen</a></li>
-            <li><a href="kategori.php?c=4">HP & Laptop</a></li>
+            <?php foreach (array_slice($categories, 0, 4) as $popularCat): ?>
+              <li>
+                <a href="index.php?c=<?php echo (int)$popularCat['id']; ?>">
+                  <?php echo htmlspecialchars($popularCat['name'], ENT_QUOTES, 'UTF-8'); ?>
+                </a>
+              </li>
+            <?php endforeach; ?>
           </ul>
         </div>
 
@@ -556,8 +550,8 @@
       <div class="footer-bottom">
         <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
-          <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> ·
-          <a href="kebijakan-privasi.php">Kebijakan Privasi</a> ·
+          <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
+          <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;
           <a href="sitemap.xml">Sitemap</a>
         </nav>
       </div>

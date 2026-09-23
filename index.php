@@ -1,23 +1,23 @@
 <?php
-session_start();
-require_once __DIR__ . '/koneksi.php';
+    session_start();
+    require_once __DIR__ . '/koneksi.php';
 
-// Flash message (misal setelah pasang iklan atau aksi lain)
-$flashSuccess = $_SESSION['flash_success'] ?? null;
-unset($_SESSION['flash_success']);
+    // Flash message (misal setelah pasang iklan atau aksi lain)
+    $flashSuccess = $_SESSION['flash_success'] ?? null;
+    unset($_SESSION['flash_success']);
 
-// --------------------------------------------------------------------------
-// 1. Tangkap Parameter Filter & Pencarian
-// --------------------------------------------------------------------------
-$search    = trim($_GET['q'] ?? '');
-$catFilter = isset($_GET['c']) && is_numeric($_GET['c']) && (int)$_GET['c'] > 0 ? (int)$_GET['c'] : null;
-$locFilter = trim($_GET['loc'] ?? '');
-$sort      = in_array($_GET['sort'] ?? '', ['terbaru', 'termurah', 'termahal', 'rekomendasi'], true) ? $_GET['sort'] : 'terbaru';
+    // --------------------------------------------------------------------------
+    // 1. Tangkap Parameter Filter & Pencarian
+    // --------------------------------------------------------------------------
+    $search    = trim($_GET['q'] ?? '');
+    $catFilter = isset($_GET['c']) && is_numeric($_GET['c']) && (int) $_GET['c'] > 0 ? (int) $_GET['c'] : null;
+    $locFilter = trim($_GET['loc'] ?? '');
+    $sort      = in_array($_GET['sort'] ?? '', ['terbaru', 'termurah', 'termahal', 'rekomendasi'], true) ? $_GET['sort'] : 'terbaru';
 
-// --------------------------------------------------------------------------
-// 2. Helper URL Builder untuk Parameter Filter Preservasi
-// --------------------------------------------------------------------------
-if (!function_exists('filterUrl')) {
+    // --------------------------------------------------------------------------
+    // 2. Helper URL Builder untuk Parameter Filter Preservasi
+    // --------------------------------------------------------------------------
+    if (! function_exists('filterUrl')) {
     function filterUrl(array $overrides = []): string
     {
         $params = $_GET;
@@ -28,84 +28,84 @@ if (!function_exists('filterUrl')) {
                 $params[$key] = $val;
             }
         }
-        return 'index.php' . (!empty($params) ? '?' . http_build_query($params) : '');
+        return 'index.php' . (! empty($params) ? '?' . http_build_query($params) : '');
     }
-}
+    }
 
-// --------------------------------------------------------------------------
-// 3. Ambil Kategori & Lokasi Dinamis dari Database
-// --------------------------------------------------------------------------
-$stmtCat    = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
-$categories = $stmtCat->fetchAll();
+    // --------------------------------------------------------------------------
+    // 3. Ambil Kategori & Lokasi Dinamis dari Database
+    // --------------------------------------------------------------------------
+    $stmtCat    = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+    $categories = $stmtCat->fetchAll();
 
-$categoryMap = [];
-foreach ($categories as $c) {
-    $categoryMap[(int)$c['id']] = $c;
-}
-$currentCategoryName = ($catFilter && isset($categoryMap[$catFilter])) ? $categoryMap[$catFilter]['name'] : null;
+    $categoryMap = [];
+    foreach ($categories as $c) {
+    $categoryMap[(int) $c['id']] = $c;
+    }
+    $currentCategoryName = ($catFilter && isset($categoryMap[$catFilter])) ? $categoryMap[$catFilter]['name'] : null;
 
-// Ambil daftar lokasi unik dari iklan yang aktif
-$stmtLoc = $pdo->query("
-    SELECT DISTINCT location 
-    FROM ads 
-    WHERE location IS NOT NULL AND TRIM(location) != '' 
+    // Ambil daftar lokasi unik dari iklan yang aktif
+    $stmtLoc = $pdo->query("
+    SELECT DISTINCT location
+    FROM ads
+    WHERE location IS NOT NULL AND TRIM(location) != ''
     ORDER BY location ASC
 ");
-$locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
+    $locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
 
-// --------------------------------------------------------------------------
-// 4. Query Dinamis untuk Daftar Iklan (Dengan Filter & Search)
-// --------------------------------------------------------------------------
-$where  = [];
-$params = [];
+    // --------------------------------------------------------------------------
+    // 4. Query Dinamis untuk Daftar Iklan (Dengan Filter & Search)
+    // --------------------------------------------------------------------------
+    $where  = [];
+    $params = [];
 
-if ($search !== '') {
+    if ($search !== '') {
     $where[]  = "(a.title LIKE ? OR a.description LIKE ?)";
     $params[] = "%{$search}%";
     $params[] = "%{$search}%";
-}
+    }
 
-if ($catFilter !== null) {
+    if ($catFilter !== null) {
     $where[]  = "a.category_id = ?";
     $params[] = $catFilter;
-}
+    }
 
-if ($locFilter !== '') {
+    if ($locFilter !== '') {
     $where[]  = "a.location = ?";
     $params[] = $locFilter;
-}
+    }
 
-$orderBy = match ($sort) {
+    $orderBy = match ($sort) {
     'termurah'    => 'ORDER BY a.price ASC',
     'termahal'    => 'ORDER BY a.price DESC',
     'rekomendasi' => 'ORDER BY a.price DESC, a.id DESC',
     default       => 'ORDER BY a.created_at DESC',
-};
+    };
 
-$sqlAds = "
+    $sqlAds = "
     SELECT a.*, c.name AS category_name, c.icon AS category_icon,
            (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
     FROM ads a
     LEFT JOIN categories c ON a.category_id = c.id
 ";
 
-if (!empty($where)) {
+    if (! empty($where)) {
     $sqlAds .= " WHERE " . implode(" AND ", $where);
-}
-$sqlAds .= " " . $orderBy . " LIMIT 24";
+    }
+    $sqlAds .= " " . $orderBy . " LIMIT 24";
 
-$stmtAds = $pdo->prepare($sqlAds);
-$stmtAds->execute($params);
-$ads = $stmtAds->fetchAll();
-$totalAds = count($ads);
+    $stmtAds = $pdo->prepare($sqlAds);
+    $stmtAds->execute($params);
+    $ads      = $stmtAds->fetchAll();
+    $totalAds = count($ads);
 
-// Cek apakah sedang ada filter yang aktif
-$hasActiveFilter = ($search !== '' || $catFilter !== null || $locFilter !== '' || $sort !== 'terbaru');
+    // Cek apakah sedang ada filter yang aktif
+    $hasActiveFilter = ($search !== '' || $catFilter !== null || $locFilter !== '' || $sort !== 'terbaru');
 
-// --------------------------------------------------------------------------
-// 5. Query Rekomendasi Dinamis dari Database (0 Hardcoded)
-// --------------------------------------------------------------------------
-$stmtRec = $pdo->query("
+    // --------------------------------------------------------------------------
+    // 5. Query Rekomendasi Dinamis dari Database (0 Hardcoded)
+    // --------------------------------------------------------------------------
+    $stmtRec = $pdo->query("
     SELECT a.*, c.name AS category_name, c.icon AS category_icon,
            (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
     FROM ads a
@@ -113,15 +113,15 @@ $stmtRec = $pdo->query("
     ORDER BY a.price DESC, a.id DESC
     LIMIT 4
 ");
-$recommendations = $stmtRec->fetchAll();
+    $recommendations = $stmtRec->fetchAll();
 
-// Penentuan meta title dinamis
-$pageTitle = 'OLX Clone — Jual Beli Online Mudah & Terpercaya';
-if ($search !== '') {
+    // Penentuan meta title dinamis
+    $pageTitle = 'OLX Clone — Jual Beli Online Mudah & Terpercaya';
+    if ($search !== '') {
     $pageTitle = 'Cari "' . htmlspecialchars($search, ENT_QUOTES, 'UTF-8') . '" — OLX Clone';
-} elseif ($currentCategoryName) {
+    } elseif ($currentCategoryName) {
     $pageTitle = 'Jual Beli ' . htmlspecialchars($currentCategoryName, ENT_QUOTES, 'UTF-8') . ' — OLX Clone';
-}
+    }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -218,7 +218,7 @@ if ($search !== '') {
         <div class="location-dropdown-wrapper">
           <button class="location-selector" aria-label="Pilih lokasi" type="button" aria-haspopup="true" aria-expanded="false">
             <i class="fa-solid fa-location-dot"></i>
-            <span><?php echo !empty($locFilter) ? htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8') : 'Indonesia'; ?></span>
+            <span><?php echo ! empty($locFilter) ? htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8') : 'Indonesia'; ?></span>
             <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
           </button>
           <div class="location-menu" role="menu">
@@ -226,7 +226,7 @@ if ($search !== '') {
               <i class="fa-solid fa-earth-asia"></i> Semua Indonesia
             </a>
             <?php foreach ($locations as $loc): ?>
-              <a href="<?php echo htmlspecialchars(filterUrl(['loc' => $loc]), ENT_QUOTES, 'UTF-8'); ?>" class="location-item <?php echo ($locFilter === $loc) ? 'active' : ''; ?>">
+              <a href="<?php echo htmlspecialchars(filterUrl(['loc' => $loc]), ENT_QUOTES, 'UTF-8'); ?>" class="location-item <?php echo($locFilter === $loc) ? 'active' : ''; ?>">
                 <i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($loc, ENT_QUOTES, 'UTF-8'); ?>
               </a>
             <?php endforeach; ?>
@@ -237,9 +237,9 @@ if ($search !== '') {
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
           <label for="search-input" class="sr-only">Cari di OLX Clone</label>
           <?php if ($catFilter !== null): ?>
-            <input type="hidden" name="c" value="<?php echo (int)$catFilter; ?>">
+            <input type="hidden" name="c" value="<?php echo (int) $catFilter; ?>">
           <?php endif; ?>
-          <?php if (!empty($locFilter)): ?>
+          <?php if (! empty($locFilter)): ?>
             <input type="hidden" name="loc" value="<?php echo htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8'); ?>">
           <?php endif; ?>
           <input type="search" id="search-input" name="q" value="<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
@@ -284,27 +284,57 @@ if ($search !== '') {
 
   <!-- ================================================================
        NAVIGASI KATEGORI — Tabel: categories (id, name, icon)
+       Sembunyi otomatis saat filter kategori aktif
        ================================================================ -->
-  <nav class="category-nav" aria-label="Navigasi kategori">
-    <div class="container">
-      <ul class="category-nav-list">
-        <li>
-          <a href="<?php echo htmlspecialchars(filterUrl(['c' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($catFilter === null) ? 'active' : ''; ?>">
-            <span class="cat-icon"><i class="fa-solid fa-border-all"></i></span>
-            Semua Kategori
-          </a>
-        </li>
-        <?php foreach ($categories as $cat): ?>
-          <li>
-            <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($catFilter === (int)$cat['id']) ? 'active' : ''; ?>">
-              <span class="cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']); ?>"></i></span>
-              <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>
-            </a>
-          </li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
-  </nav>
+  <?php if ($catFilter === null): ?>
+    <nav class="category-nav" aria-label="Navigasi kategori">
+      <div class="container">
+        <div class="category-nav-wrapper">
+          <ul class="category-nav-list">
+            <li>
+              <a href="<?php echo htmlspecialchars(filterUrl(['c' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="active">
+                <span class="cat-icon"><i class="fa-solid fa-border-all"></i></span>
+                Semua Kategori
+              </a>
+            </li>
+            <?php foreach (array_slice($categories, 0, 6) as $cat): ?>
+              <li>
+                <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>">
+                  <span class="cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']); ?>"></i></span>
+                  <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>
+                </a>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+
+          <!-- Tombol Titik Tiga / Lainnya untuk Membuka Seluruh Kategori -->
+          <div class="category-more-wrapper">
+            <button type="button" class="category-more-btn" aria-expanded="false" aria-controls="category-extended-drawer" title="Tampilkan Semua Kategori">
+              <span class="cat-icon"><i class="fa-solid fa-ellipsis"></i></span>
+              <span>Lainnya</span>
+              <i class="fa-solid fa-chevron-down more-arrow"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel Extended Kebawah (Drawer Seluruh Kategori) -->
+        <div class="category-extended-drawer" id="category-extended-drawer" role="region" aria-label="Seluruh Kategori">
+          <div class="category-drawer-header">
+            <h3><i class="fa-solid fa-layer-group"></i> Seluruh Kategori OLX Clone</h3>
+            <button type="button" class="category-drawer-close" aria-label="Tutup panel kategori">&times;</button>
+          </div>
+          <div class="category-drawer-grid">
+            <?php foreach ($categories as $cat): ?>
+              <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>" class="category-drawer-card">
+                <span class="drawer-cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']); ?>"></i></span>
+                <span class="drawer-cat-name"><?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?></span>
+              </a>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      </div>
+    </nav>
+  <?php endif; ?>
 
 
   <!-- ================================================================
@@ -313,7 +343,7 @@ if ($search !== '') {
   <main id="main-content" role="main">
 
     <!-- Flash Alert Notification -->
-    <?php if (!empty($flashSuccess)): ?>
+    <?php if (! empty($flashSuccess)): ?>
       <div class="container" style="padding-top: 16px;">
         <div class="alert alert-success" role="alert">
           <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
@@ -326,7 +356,7 @@ if ($search !== '') {
     <?php endif; ?>
 
     <!-- ============ HERO BANNER ============ -->
-    <?php if (!$hasActiveFilter): ?>
+    <?php if (! $hasActiveFilter): ?>
       <section class="hero-banner" aria-label="Banner utama">
         <div class="container">
           <h1>Temukan Barang Impianmu</h1>
@@ -337,7 +367,7 @@ if ($search !== '') {
 
 
     <!-- ============ JELAJAHI KATEGORI ============ -->
-    <?php if (!$hasActiveFilter): ?>
+    <!-- <?php if (! $hasActiveFilter): ?>
       <section class="section" aria-labelledby="heading-kategori">
         <div class="container">
 
@@ -348,7 +378,7 @@ if ($search !== '') {
 
           <div class="category-grid">
             <?php foreach ($categories as $cat): ?>
-              <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>" class="category-card <?php echo ($catFilter === (int)$cat['id']) ? 'active' : ''; ?>">
+              <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>" class="category-card <?php echo($catFilter === (int) $cat['id']) ? 'active' : ''; ?>">
                 <span class="cat-icon" aria-hidden="true"><i class="<?php echo htmlspecialchars($cat['icon']); ?>"></i></span>
                 <span class="cat-name"><?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?></span>
               </a>
@@ -357,7 +387,7 @@ if ($search !== '') {
 
         </div>
       </section>
-    <?php endif; ?>
+    <?php endif; ?> -->
 
 
     <!-- ============ DAFTAR IKLAN (DINAMIS DATABASE) ============ -->
@@ -369,15 +399,15 @@ if ($search !== '') {
           <div>
             <h2 id="heading-iklan">
               <?php
-              if ($search !== '') {
-                  echo 'Hasil Pencarian: "' . htmlspecialchars($search, ENT_QUOTES, 'UTF-8') . '"';
-              } elseif ($currentCategoryName) {
-                  echo 'Iklan ' . htmlspecialchars($currentCategoryName, ENT_QUOTES, 'UTF-8');
-              } elseif (!empty($locFilter)) {
-                  echo 'Iklan di ' . htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8');
-              } else {
-                  echo 'Iklan Terbaru';
-              }
+                  if ($search !== '') {
+                      echo 'Hasil Pencarian: "' . htmlspecialchars($search, ENT_QUOTES, 'UTF-8') . '"';
+                  } elseif ($currentCategoryName) {
+                      echo 'Iklan ' . htmlspecialchars($currentCategoryName, ENT_QUOTES, 'UTF-8');
+                  } elseif (! empty($locFilter)) {
+                      echo 'Iklan di ' . htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8');
+                  } else {
+                      echo 'Iklan Terbaru';
+                  }
               ?>
             </h2>
             <small style="color: var(--text-muted); font-size: 0.85rem;">
@@ -388,10 +418,10 @@ if ($search !== '') {
           <div class="filter-sort-wrapper">
             <label for="sort-select"><i class="fa-solid fa-arrow-down-wide-short"></i> Urutkan:</label>
             <select id="sort-select" class="filter-sort-select" aria-label="Urutkan iklan">
-              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'terbaru']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'terbaru') ? 'selected' : ''; ?>>Terbaru</option>
-              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'termurah']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'termurah') ? 'selected' : ''; ?>>Harga Terendah</option>
-              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'termahal']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'termahal') ? 'selected' : ''; ?>>Harga Tertinggi</option>
-              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'rekomendasi']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'rekomendasi') ? 'selected' : ''; ?>>Rekomendasi</option>
+              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'terbaru']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo($sort === 'terbaru') ? 'selected' : ''; ?>>Terbaru</option>
+              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'termurah']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo($sort === 'termurah') ? 'selected' : ''; ?>>Harga Terendah</option>
+              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'termahal']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo($sort === 'termahal') ? 'selected' : ''; ?>>Harga Tertinggi</option>
+              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'rekomendasi']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo($sort === 'rekomendasi') ? 'selected' : ''; ?>>Rekomendasi</option>
             </select>
           </div>
         </div>
@@ -416,7 +446,7 @@ if ($search !== '') {
                   </a>
                 <?php endif; ?>
 
-                <?php if (!empty($locFilter)): ?>
+                <?php if (! empty($locFilter)): ?>
                   <a href="<?php echo htmlspecialchars(filterUrl(['loc' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="filter-tag" title="Hapus filter lokasi">
                     Lokasi: <?php echo htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8'); ?>
                     <i class="fa-solid fa-xmark"></i>
@@ -441,13 +471,13 @@ if ($search !== '') {
           <div class="ad-grid">
             <?php foreach ($ads as $ad): ?>
               <article class="ad-card">
-                <a href="detail.php?id=<?php echo (int)$ad['id']; ?>" aria-label="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?> - Rp <?php echo number_format($ad['price'], 0, ',', '.'); ?>">
+                <a href="detail.php?id=<?php echo (int) $ad['id']; ?>" aria-label="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?> - Rp <?php echo number_format($ad['price'], 0, ',', '.'); ?>">
                   <div class="ad-card-image">
-                    <?php if (!empty($ad['image_path']) && file_exists(__DIR__ . '/' . $ad['image_path'])): ?>
+                    <?php if (! empty($ad['image_path']) && file_exists(__DIR__ . '/' . $ad['image_path'])): ?>
                       <img src="<?php echo htmlspecialchars($ad['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy">
                     <?php else: ?>
                       <div class="img-placeholder" aria-hidden="true">
-                        <i class="<?php echo !empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon'], ENT_QUOTES, 'UTF-8') : 'fa-solid fa-box-open'; ?>"></i>
+                        <i class="<?php echo ! empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon'], ENT_QUOTES, 'UTF-8') : 'fa-solid fa-box-open'; ?>"></i>
                       </div>
                     <?php endif; ?>
                     <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">
@@ -508,7 +538,7 @@ if ($search !== '') {
 
 
     <!-- ============ IKLAN REKOMENDASI (DINAMIS DARI DATABASE) ============ -->
-    <?php if (!empty($recommendations)): ?>
+    <?php if (! empty($recommendations)): ?>
       <section class="section" aria-labelledby="heading-rekomendasi">
         <div class="container">
 
@@ -520,13 +550,13 @@ if ($search !== '') {
           <div class="ad-grid">
             <?php foreach ($recommendations as $rec): ?>
               <article class="ad-card">
-                <a href="detail.php?id=<?php echo (int)$rec['id']; ?>" aria-label="<?php echo htmlspecialchars($rec['title'], ENT_QUOTES, 'UTF-8'); ?> - Rp <?php echo number_format($rec['price'], 0, ',', '.'); ?>">
+                <a href="detail.php?id=<?php echo (int) $rec['id']; ?>" aria-label="<?php echo htmlspecialchars($rec['title'], ENT_QUOTES, 'UTF-8'); ?> - Rp <?php echo number_format($rec['price'], 0, ',', '.'); ?>">
                   <div class="ad-card-image">
-                    <?php if (!empty($rec['image_path']) && file_exists(__DIR__ . '/' . $rec['image_path'])): ?>
+                    <?php if (! empty($rec['image_path']) && file_exists(__DIR__ . '/' . $rec['image_path'])): ?>
                       <img src="<?php echo htmlspecialchars($rec['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($rec['title'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy">
                     <?php else: ?>
                       <div class="img-placeholder" aria-hidden="true">
-                        <i class="<?php echo !empty($rec['category_icon']) ? htmlspecialchars($rec['category_icon'], ENT_QUOTES, 'UTF-8') : 'fa-solid fa-box-open'; ?>"></i>
+                        <i class="<?php echo ! empty($rec['category_icon']) ? htmlspecialchars($rec['category_icon'], ENT_QUOTES, 'UTF-8') : 'fa-solid fa-box-open'; ?>"></i>
                       </div>
                     <?php endif; ?>
                     <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">

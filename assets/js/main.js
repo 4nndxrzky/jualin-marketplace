@@ -272,11 +272,17 @@ document.addEventListener("DOMContentLoaded", () => {
       e.stopPropagation();
       locationMenu.classList.toggle("show");
       const isExpanded = locationMenu.classList.contains("show");
-      locationSelector.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+      locationSelector.setAttribute(
+        "aria-expanded",
+        isExpanded ? "true" : "false",
+      );
     });
 
     document.addEventListener("click", (e) => {
-      if (!locationMenu.contains(e.target) && !locationSelector.contains(e.target)) {
+      if (
+        !locationMenu.contains(e.target) &&
+        !locationSelector.contains(e.target)
+      ) {
         locationMenu.classList.remove("show");
         locationSelector.setAttribute("aria-expanded", "false");
       }
@@ -326,4 +332,58 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  // ==========================================================================
+  // 11. CATEGORY EXTENDED DRAWER TOGGLE (HOMEPAGE MORE / TITIK TIGA)
+  // ==========================================================================
+  const categoryMoreBtn = document.querySelector(".category-more-btn");
+  const categoryDrawer = document.querySelector(".category-extended-drawer");
+  const categoryDrawerClose = document.querySelector(".category-drawer-close");
+
+  if (categoryMoreBtn && categoryDrawer) {
+    categoryMoreBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = categoryDrawer.classList.toggle("show");
+      categoryMoreBtn.classList.toggle("active", isOpen);
+      categoryMoreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    if (categoryDrawerClose) {
+      categoryDrawerClose.addEventListener("click", () => {
+        categoryDrawer.classList.remove("show");
+        categoryMoreBtn.classList.remove("active");
+        categoryMoreBtn.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!categoryDrawer.contains(e.target) && !categoryMoreBtn.contains(e.target)) {
+        categoryDrawer.classList.remove("show");
+        categoryMoreBtn.classList.remove("active");
+        categoryMoreBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        categoryDrawer.classList.remove("show");
+        categoryMoreBtn.classList.remove("active");
+        categoryMoreBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  // ==========================================================================
+  // 12. PHONE NUMBER REVEAL HANDLER (DETAIL PAGE)
+  // ==========================================================================
+  const btnShowPhone = document.getElementById("btn-show-phone");
+  if (btnShowPhone) {
+    btnShowPhone.addEventListener("click", function () {
+      const phoneNumber = this.getAttribute("data-phone");
+      const rawNumber = this.getAttribute("data-phone-raw") || phoneNumber;
+      if (phoneNumber) {
+        this.outerHTML = `<a href="tel:${rawNumber}" class="btn btn-outline btn-block" style="font-weight: 700; color: var(--primary);"><i class="fa-solid fa-phone"></i> ${phoneNumber}</a>`;
+      }
+    });
+  }
 });
