@@ -260,4 +260,70 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // ==========================================================================
+  // 8. LOCATION DROPDOWN SELECTOR (HEADER)
+  // ==========================================================================
+  const locationSelector = document.querySelector(".location-selector");
+  const locationMenu = document.querySelector(".location-menu");
+
+  if (locationSelector && locationMenu) {
+    locationSelector.addEventListener("click", (e) => {
+      e.stopPropagation();
+      locationMenu.classList.toggle("show");
+      const isExpanded = locationMenu.classList.contains("show");
+      locationSelector.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!locationMenu.contains(e.target) && !locationSelector.contains(e.target)) {
+        locationMenu.classList.remove("show");
+        locationSelector.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        locationMenu.classList.remove("show");
+        locationSelector.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  // ==========================================================================
+  // 9. DYNAMIC SORT SELECT HANDLER (HOMEPAGE & SEARCH)
+  // ==========================================================================
+  const sortSelect = document.querySelector(".filter-sort-select");
+  if (sortSelect) {
+    sortSelect.addEventListener("change", function () {
+      const targetUrl = this.value;
+      if (targetUrl) {
+        window.location.href = targetUrl;
+      }
+    });
+  }
+
+  // ==========================================================================
+  // 10. WISHLIST BUTTON TOGGLE (AD CARDS)
+  // ==========================================================================
+  const wishlistButtons = document.querySelectorAll(".ad-card-wishlist");
+  wishlistButtons.forEach((btn) => {
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const icon = this.querySelector("i");
+      if (!icon) return;
+
+      if (icon.classList.contains("fa-regular")) {
+        icon.classList.remove("fa-regular");
+        icon.classList.add("fa-solid");
+        icon.style.color = "var(--danger)";
+      } else {
+        icon.classList.remove("fa-solid");
+        icon.classList.add("fa-regular");
+        icon.style.color = "";
+      }
+    });
+  });
 });

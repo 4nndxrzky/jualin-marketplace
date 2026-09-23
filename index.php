@@ -1,24 +1,127 @@
 <?php
-    session_start();
-    require_once __DIR__ . '/koneksi.php';
+session_start();
+require_once __DIR__ . '/koneksi.php';
 
-    $flashSuccess = $_SESSION['flash_success'] ?? null;
-    unset($_SESSION['flash_success']);
+// Flash message (misal setelah pasang iklan atau aksi lain)
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+unset($_SESSION['flash_success']);
 
-    // Ambil kategori secara dinamis dari tabel categories
-    $stmtCat    = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
-    $categories = $stmtCat->fetchAll();
+// --------------------------------------------------------------------------
+// 1. Tangkap Parameter Filter & Pencarian
+// --------------------------------------------------------------------------
+$search    = trim($_GET['q'] ?? '');
+$catFilter = isset($_GET['c']) && is_numeric($_GET['c']) && (int)$_GET['c'] > 0 ? (int)$_GET['c'] : null;
+$locFilter = trim($_GET['loc'] ?? '');
+$sort      = in_array($_GET['sort'] ?? '', ['terbaru', 'termurah', 'termahal', 'rekomendasi'], true) ? $_GET['sort'] : 'terbaru';
 
-    // Ambil iklan terbaru dari database
-    $stmtAds = $pdo->query("
+// --------------------------------------------------------------------------
+// 2. Helper URL Builder untuk Parameter Filter Preservasi
+// --------------------------------------------------------------------------
+if (!function_exists('filterUrl')) {
+    function filterUrl(array $overrides = []): string
+    {
+        $params = $_GET;
+        foreach ($overrides as $key => $val) {
+            if ($val === null || $val === '') {
+                unset($params[$key]);
+            } else {
+                $params[$key] = $val;
+            }
+        }
+        return 'index.php' . (!empty($params) ? '?' . http_build_query($params) : '');
+    }
+}
+
+// --------------------------------------------------------------------------
+// 3. Ambil Kategori & Lokasi Dinamis dari Database
+// --------------------------------------------------------------------------
+$stmtCat    = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+$categories = $stmtCat->fetchAll();
+
+$categoryMap = [];
+foreach ($categories as $c) {
+    $categoryMap[(int)$c['id']] = $c;
+}
+$currentCategoryName = ($catFilter && isset($categoryMap[$catFilter])) ? $categoryMap[$catFilter]['name'] : null;
+
+// Ambil daftar lokasi unik dari iklan yang aktif
+$stmtLoc = $pdo->query("
+    SELECT DISTINCT location 
+    FROM ads 
+    WHERE location IS NOT NULL AND TRIM(location) != '' 
+    ORDER BY location ASC
+");
+$locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
+
+// --------------------------------------------------------------------------
+// 4. Query Dinamis untuk Daftar Iklan (Dengan Filter & Search)
+// --------------------------------------------------------------------------
+$where  = [];
+$params = [];
+
+if ($search !== '') {
+    $where[]  = "(a.title LIKE ? OR a.description LIKE ?)";
+    $params[] = "%{$search}%";
+    $params[] = "%{$search}%";
+}
+
+if ($catFilter !== null) {
+    $where[]  = "a.category_id = ?";
+    $params[] = $catFilter;
+}
+
+if ($locFilter !== '') {
+    $where[]  = "a.location = ?";
+    $params[] = $locFilter;
+}
+
+$orderBy = match ($sort) {
+    'termurah'    => 'ORDER BY a.price ASC',
+    'termahal'    => 'ORDER BY a.price DESC',
+    'rekomendasi' => 'ORDER BY a.price DESC, a.id DESC',
+    default       => 'ORDER BY a.created_at DESC',
+};
+
+$sqlAds = "
     SELECT a.*, c.name AS category_name, c.icon AS category_icon,
            (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
     FROM ads a
     LEFT JOIN categories c ON a.category_id = c.id
-    ORDER BY a.created_at DESC
-    LIMIT 8
+";
+
+if (!empty($where)) {
+    $sqlAds .= " WHERE " . implode(" AND ", $where);
+}
+$sqlAds .= " " . $orderBy . " LIMIT 24";
+
+$stmtAds = $pdo->prepare($sqlAds);
+$stmtAds->execute($params);
+$ads = $stmtAds->fetchAll();
+$totalAds = count($ads);
+
+// Cek apakah sedang ada filter yang aktif
+$hasActiveFilter = ($search !== '' || $catFilter !== null || $locFilter !== '' || $sort !== 'terbaru');
+
+// --------------------------------------------------------------------------
+// 5. Query Rekomendasi Dinamis dari Database (0 Hardcoded)
+// --------------------------------------------------------------------------
+$stmtRec = $pdo->query("
+    SELECT a.*, c.name AS category_name, c.icon AS category_icon,
+           (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
+    FROM ads a
+    LEFT JOIN categories c ON a.category_id = c.id
+    ORDER BY a.price DESC, a.id DESC
+    LIMIT 4
 ");
-    $latestAds = $stmtAds->fetchAll();
+$recommendations = $stmtRec->fetchAll();
+
+// Penentuan meta title dinamis
+$pageTitle = 'OLX Clone — Jual Beli Online Mudah & Terpercaya';
+if ($search !== '') {
+    $pageTitle = 'Cari "' . htmlspecialchars($search, ENT_QUOTES, 'UTF-8') . '" — OLX Clone';
+} elseif ($currentCategoryName) {
+    $pageTitle = 'Jual Beli ' . htmlspecialchars($currentCategoryName, ENT_QUOTES, 'UTF-8') . ' — OLX Clone';
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -30,16 +133,16 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>OLX Clone — Jual Beli Online Mudah & Terpercaya</title>
+  <title><?php echo $pageTitle; ?></title>
   <meta name="description" content="Temukan ribuan iklan barang bekas dan baru di OLX Clone. Jual beli mobil, properti, elektronik, dan lainnya dengan mudah, cepat, dan terpercaya.">
   <meta name="keywords" content="jual beli online, marketplace, iklan gratis, barang bekas, OLX, beli murah, jual cepat">
   <meta name="author" content="OLX Clone">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://olxclone.local/">
+  <link rel="canonical" href="https://olxclone.local/<?php echo $hasActiveFilter ? htmlspecialchars(filterUrl(), ENT_QUOTES, 'UTF-8') : ''; ?>">
 
   <!-- ==================== OPEN GRAPH (Facebook/WhatsApp) ==================== -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="OLX Clone — Jual Beli Online Mudah & Terpercaya">
+  <meta property="og:title" content="<?php echo $pageTitle; ?>">
   <meta property="og:description" content="Temukan ribuan iklan barang bekas dan baru. Jual beli mobil, properti, elektronik dengan mudah dan terpercaya.">
   <meta property="og:url" content="https://olxclone.local/">
   <meta property="og:image" content="https://olxclone.local/assets/images/og-preview.jpg">
@@ -50,7 +153,7 @@
 
   <!-- ==================== TWITTER CARD ==================== -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="OLX Clone — Jual Beli Online Mudah & Terpercaya">
+  <meta name="twitter:title" content="<?php echo $pageTitle; ?>">
   <meta name="twitter:description" content="Temukan ribuan iklan barang bekas dan baru di OLX Clone.">
   <meta name="twitter:image" content="https://olxclone.local/assets/images/og-preview.jpg">
 
@@ -69,7 +172,7 @@
       "description": "Jual beli online mudah dan terpercaya",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://olxclone.local/search?q={search_term_string}",
+        "target": "https://olxclone.local/index.php?q={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }
@@ -90,7 +193,7 @@
     }
   </script>
 
-  <!-- ==================== FONT AWESOME ICONS ==================== -->
+  <!-- ==================== FONT AWESOME ICONS (NO EMOJI) ==================== -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- ==================== CSS EXTERNAL ==================== -->
@@ -100,8 +203,7 @@
 <body>
 
   <!-- ================================================================
-       HEADER — Logo, Search, Lokasi, Auth
-       Tabel terkait: users (login/register)
+       HEADER — Logo, Search, Lokasi Dinamis, Auth
        ================================================================ -->
   <header class="site-header" role="banner">
     <div class="container">
@@ -112,15 +214,35 @@
           OLX<span>Clone</span>
         </a>
 
-        <!-- Lokasi -->
-        <button class="location-selector" aria-label="Pilih lokasi" type="button">
-          <i class="fa-solid fa-location-dot"></i> <span>Indonesia</span> <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
-        </button>
+        <!-- Lokasi Dinamis Dropdown -->
+        <div class="location-dropdown-wrapper">
+          <button class="location-selector" aria-label="Pilih lokasi" type="button" aria-haspopup="true" aria-expanded="false">
+            <i class="fa-solid fa-location-dot"></i>
+            <span><?php echo !empty($locFilter) ? htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8') : 'Indonesia'; ?></span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
+          </button>
+          <div class="location-menu" role="menu">
+            <a href="<?php echo htmlspecialchars(filterUrl(['loc' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="location-item <?php echo empty($locFilter) ? 'active' : ''; ?>">
+              <i class="fa-solid fa-earth-asia"></i> Semua Indonesia
+            </a>
+            <?php foreach ($locations as $loc): ?>
+              <a href="<?php echo htmlspecialchars(filterUrl(['loc' => $loc]), ENT_QUOTES, 'UTF-8'); ?>" class="location-item <?php echo ($locFilter === $loc) ? 'active' : ''; ?>">
+                <i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($loc, ENT_QUOTES, 'UTF-8'); ?>
+              </a>
+            <?php endforeach; ?>
+          </div>
+        </div>
 
         <!-- Search Bar -->
-        <form class="search-form" action="search.php" method="GET" role="search" aria-label="Cari iklan">
+        <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
           <label for="search-input" class="sr-only">Cari di OLX Clone</label>
-          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, laptop, dan lainnya..." autocomplete="off">
+          <?php if ($catFilter !== null): ?>
+            <input type="hidden" name="c" value="<?php echo (int)$catFilter; ?>">
+          <?php endif; ?>
+          <?php if (!empty($locFilter)): ?>
+            <input type="hidden" name="loc" value="<?php echo htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8'); ?>">
+          <?php endif; ?>
+          <input type="search" id="search-input" name="q" value="<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
 
@@ -129,14 +251,14 @@
           <?php if (isset($_SESSION['user_id'])): ?>
             <div class="user-menu-wrapper">
               <button type="button" class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
-                <span class="user-avatar-sm"><?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></span>
-                <span class="user-menu-name"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="user-avatar-sm"><?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?></span>
+                <span class="user-menu-name"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8'); ?></span>
                 <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
               </button>
               <div class="user-dropdown" role="menu">
                 <div style="padding: 10px 16px; border-bottom: 1px solid var(--gray-200);">
-                  <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></strong>
-                  <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($_SESSION['user_email'], ENT_QUOTES, 'UTF-8') ?></small>
+                  <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                  <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($_SESSION['user_email'], ENT_QUOTES, 'UTF-8'); ?></small>
                 </div>
                 <a href="pasang-iklan.php" class="dropdown-item" role="menuitem">
                   <i class="fa-solid fa-box-open"></i> Iklan Saya
@@ -166,11 +288,17 @@
   <nav class="category-nav" aria-label="Navigasi kategori">
     <div class="container">
       <ul class="category-nav-list">
+        <li>
+          <a href="<?php echo htmlspecialchars(filterUrl(['c' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($catFilter === null) ? 'active' : ''; ?>">
+            <span class="cat-icon"><i class="fa-solid fa-border-all"></i></span>
+            Semua Kategori
+          </a>
+        </li>
         <?php foreach ($categories as $cat): ?>
           <li>
-            <a href="kategori.php?c=<?php echo (int) $cat['id'] ?>">
-              <span class="cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']) ?>"></i></span>
-              <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?>
+            <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($catFilter === (int)$cat['id']) ? 'active' : ''; ?>">
+              <span class="cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']); ?>"></i></span>
+              <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>
             </a>
           </li>
         <?php endforeach; ?>
@@ -184,12 +312,13 @@
        ================================================================ -->
   <main id="main-content" role="main">
 
-    <?php if (! empty($flashSuccess)): ?>
+    <!-- Flash Alert Notification -->
+    <?php if (!empty($flashSuccess)): ?>
       <div class="container" style="padding-top: 16px;">
         <div class="alert alert-success" role="alert">
           <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
           <div class="alert-content">
-            <?php echo htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8') ?>
+            <?php echo htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8'); ?>
           </div>
           <button type="button" class="alert-close" aria-label="Tutup notifikasi">&times;</button>
         </div>
@@ -197,60 +326,128 @@
     <?php endif; ?>
 
     <!-- ============ HERO BANNER ============ -->
-    <section class="hero-banner" aria-label="Banner utama">
+    <?php if (!$hasActiveFilter): ?>
+      <section class="hero-banner" aria-label="Banner utama">
+        <div class="container">
+          <h1>Temukan Barang Impianmu</h1>
+          <p>Jual beli barang bekas maupun baru, lebih mudah dan cepat di seluruh Indonesia.</p>
+        </div>
+      </section>
+    <?php endif; ?>
+
+
+    <!-- ============ JELAJAHI KATEGORI ============ -->
+    <?php if (!$hasActiveFilter): ?>
+      <section class="section" aria-labelledby="heading-kategori">
+        <div class="container">
+
+          <div class="section-header">
+            <h2 id="heading-kategori">Jelajahi Kategori</h2>
+            <a href="index.php">Lihat Semua <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+
+          <div class="category-grid">
+            <?php foreach ($categories as $cat): ?>
+              <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>" class="category-card <?php echo ($catFilter === (int)$cat['id']) ? 'active' : ''; ?>">
+                <span class="cat-icon" aria-hidden="true"><i class="<?php echo htmlspecialchars($cat['icon']); ?>"></i></span>
+                <span class="cat-name"><?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?></span>
+              </a>
+            <?php endforeach; ?>
+          </div>
+
+        </div>
+      </section>
+    <?php endif; ?>
+
+
+    <!-- ============ DAFTAR IKLAN (DINAMIS DATABASE) ============ -->
+    <section class="section" aria-labelledby="heading-iklan">
       <div class="container">
-        <h1>Temukan Barang Impianmu</h1>
-        <p>Jual beli barang bekas maupun baru, lebih mudah dan cepat di seluruh Indonesia.</p>
-      </div>
-    </section>
 
-
-    <!-- ============ KATEGORI POPULER ============ -->
-    <!-- Tabel terkait: categories (id, name, icon) -->
-    <section class="section" aria-labelledby="heading-kategori">
-      <div class="container">
-
+        <!-- Header Section & Sorting Selector -->
         <div class="section-header">
-          <h2 id="heading-kategori">Jelajahi Kategori</h2>
-          <a href="kategori.php">Lihat Semua →</a>
+          <div>
+            <h2 id="heading-iklan">
+              <?php
+              if ($search !== '') {
+                  echo 'Hasil Pencarian: "' . htmlspecialchars($search, ENT_QUOTES, 'UTF-8') . '"';
+              } elseif ($currentCategoryName) {
+                  echo 'Iklan ' . htmlspecialchars($currentCategoryName, ENT_QUOTES, 'UTF-8');
+              } elseif (!empty($locFilter)) {
+                  echo 'Iklan di ' . htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8');
+              } else {
+                  echo 'Iklan Terbaru';
+              }
+              ?>
+            </h2>
+            <small style="color: var(--text-muted); font-size: 0.85rem;">
+              Menampilkan <?php echo $totalAds; ?> iklan yang ditemukan
+            </small>
+          </div>
+
+          <div class="filter-sort-wrapper">
+            <label for="sort-select"><i class="fa-solid fa-arrow-down-wide-short"></i> Urutkan:</label>
+            <select id="sort-select" class="filter-sort-select" aria-label="Urutkan iklan">
+              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'terbaru']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'terbaru') ? 'selected' : ''; ?>>Terbaru</option>
+              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'termurah']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'termurah') ? 'selected' : ''; ?>>Harga Terendah</option>
+              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'termahal']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'termahal') ? 'selected' : ''; ?>>Harga Tertinggi</option>
+              <option value="<?php echo htmlspecialchars(filterUrl(['sort' => 'rekomendasi']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'rekomendasi') ? 'selected' : ''; ?>>Rekomendasi</option>
+            </select>
+          </div>
         </div>
 
-        <div class="category-grid">
-          <?php foreach ($categories as $cat): ?>
-            <a href="kategori.php?c=<?php echo (int) $cat['id'] ?>" class="category-card">
-              <span class="cat-icon" aria-hidden="true"><i class="<?php echo htmlspecialchars($cat['icon']) ?>"></i></span>
-              <span class="cat-name"><?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?></span>
-            </a>
-          <?php endforeach; ?>
-        </div>
+        <!-- Filter Status Bar (Hanya tampil bila ada filter aktif) -->
+        <?php if ($hasActiveFilter): ?>
+          <div class="filter-status-bar">
+            <div class="filter-status-info">
+              <span class="filter-status-title"><i class="fa-solid fa-filter"></i> Filter Aktif:</span>
+              <div class="filter-tags-list">
+                <?php if ($search !== ''): ?>
+                  <a href="<?php echo htmlspecialchars(filterUrl(['q' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="filter-tag" title="Hapus pencarian kata kunci">
+                    Pencarian: "<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>"
+                    <i class="fa-solid fa-xmark"></i>
+                  </a>
+                <?php endif; ?>
 
-      </div>
-    </section>
+                <?php if ($catFilter !== null && $currentCategoryName): ?>
+                  <a href="<?php echo htmlspecialchars(filterUrl(['c' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="filter-tag" title="Hapus filter kategori">
+                    Kategori: <?php echo htmlspecialchars($currentCategoryName, ENT_QUOTES, 'UTF-8'); ?>
+                    <i class="fa-solid fa-xmark"></i>
+                  </a>
+                <?php endif; ?>
 
+                <?php if (!empty($locFilter)): ?>
+                  <a href="<?php echo htmlspecialchars(filterUrl(['loc' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="filter-tag" title="Hapus filter lokasi">
+                    Lokasi: <?php echo htmlspecialchars($locFilter, ENT_QUOTES, 'UTF-8'); ?>
+                    <i class="fa-solid fa-xmark"></i>
+                  </a>
+                <?php endif; ?>
 
-    <!-- ============ IKLAN TERBARU ============ -->
-    <!-- Tabel terkait: ads + ad_images + categories + users -->
-    <section class="section" aria-labelledby="heading-terbaru">
-      <div class="container">
+                <?php if ($sort !== 'terbaru'): ?>
+                  <a href="<?php echo htmlspecialchars(filterUrl(['sort' => 'terbaru']), ENT_QUOTES, 'UTF-8'); ?>" class="filter-tag" title="Reset urutan ke terbaru">
+                    Urutan: <?php echo ucfirst($sort); ?>
+                    <i class="fa-solid fa-xmark"></i>
+                  </a>
+                <?php endif; ?>
 
-        <div class="section-header">
-          <h2 id="heading-terbaru">Iklan Terbaru</h2>
-          <a href="iklan.php?sort=terbaru">Lihat Semua →</a>
-        </div>
+                <a href="index.php" class="filter-clear-all"><i class="fa-solid fa-rotate-left"></i> Reset Semua</a>
+              </div>
+            </div>
+          </div>
+        <?php endif; ?>
 
-        <div class="ad-grid">
-
-          <?php if (! empty($latestAds)): ?>
-            <!-- Menampilkan iklan nyata dari database -->
-            <?php foreach ($latestAds as $ad): ?>
+        <!-- Grid Iklan Dinamis -->
+        <?php if ($totalAds > 0): ?>
+          <div class="ad-grid">
+            <?php foreach ($ads as $ad): ?>
               <article class="ad-card">
-                <a href="detail.php?id=<?php echo (int) $ad['id'] ?>" aria-label="<?php echo htmlspecialchars($ad['title']) ?> - Rp <?php echo number_format($ad['price'], 0, ',', '.') ?>">
+                <a href="detail.php?id=<?php echo (int)$ad['id']; ?>" aria-label="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?> - Rp <?php echo number_format($ad['price'], 0, ',', '.'); ?>">
                   <div class="ad-card-image">
-                    <?php if (! empty($ad['image_path']) && file_exists(__DIR__ . '/' . $ad['image_path'])): ?>
-                      <img src="<?php echo htmlspecialchars($ad['image_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8') ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <?php if (!empty($ad['image_path']) && file_exists(__DIR__ . '/' . $ad['image_path'])): ?>
+                      <img src="<?php echo htmlspecialchars($ad['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy">
                     <?php else: ?>
                       <div class="img-placeholder" aria-hidden="true">
-                        <i class="<?php echo ! empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open' ?>"></i>
+                        <i class="<?php echo !empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon'], ENT_QUOTES, 'UTF-8') : 'fa-solid fa-box-open'; ?>"></i>
                       </div>
                     <?php endif; ?>
                     <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">
@@ -258,167 +455,37 @@
                     </button>
                   </div>
                   <div class="ad-card-body">
-                    <p class="ad-card-price">Rp <?php echo number_format($ad['price'], 0, ',', '.') ?></p>
-                    <h3 class="ad-card-title"><?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8') ?></h3>
+                    <p class="ad-card-price">Rp <?php echo number_format($ad['price'], 0, ',', '.'); ?></p>
+                    <h3 class="ad-card-title"><?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
                     <div class="ad-card-meta">
-                      <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($ad['location'], ENT_QUOTES, 'UTF-8') ?></span>
-                      <time datetime="<?php echo substr($ad['created_at'], 0, 10) ?>"><?php echo date('d M', strtotime($ad['created_at'])) ?></time>
+                      <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($ad['location'], ENT_QUOTES, 'UTF-8'); ?></span>
+                      <time datetime="<?php echo substr($ad['created_at'], 0, 10); ?>"><?php echo date('d M', strtotime($ad['created_at'])); ?></time>
                     </div>
                   </div>
                 </a>
               </article>
             <?php endforeach; ?>
-          <?php endif; ?>
-
-          <!-- Iklan Contoh Tambahan (Fallback & Showcase Template) -->
-          <!-- Iklan Card 1 -->
-          <article class="ad-card">
-            <a href="detail.php?id=1" aria-label="Toyota Avanza 2020 - Rp 185.000.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-car"></i></div>
-                <span class="ad-card-badge">Unggulan</span>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 185.000.000</p>
-                <h3 class="ad-card-title">Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Jakarta Selatan</span>
-                  <time datetime="2026-09-20">20 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Iklan Card 2 -->
-          <article class="ad-card">
-            <a href="detail.php?id=2" aria-label="iPhone 15 Pro Max - Rp 18.500.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-mobile-screen-button"></i></div>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 18.500.000</p>
-                <h3 class="ad-card-title">iPhone 15 Pro Max 256GB Natural Titanium Fullset</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Bandung</span>
-                  <time datetime="2026-09-19">19 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Iklan Card 3 -->
-          <article class="ad-card">
-            <a href="detail.php?id=3" aria-label="Rumah Cluster Minimalis - Rp 750.000.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-house"></i></div>
-                <span class="ad-card-badge">Baru</span>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 750.000.000</p>
-                <h3 class="ad-card-title">Rumah Cluster Minimalis 2 Lantai di Tangerang Selatan</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Tangerang Selatan</span>
-                  <time datetime="2026-09-19">19 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Iklan Card 4 -->
-          <article class="ad-card">
-            <a href="detail.php?id=4" aria-label="MacBook Air M2 - Rp 14.200.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-laptop"></i></div>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 14.200.000</p>
-                <h3 class="ad-card-title">MacBook Air M2 2023 8/256GB Midnight Garansi Resmi</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Surabaya</span>
-                  <time datetime="2026-09-18">18 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Iklan Card 5 -->
-          <article class="ad-card">
-            <a href="detail.php?id=5" aria-label="Honda Beat 2023 - Rp 16.500.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-motorcycle"></i></div>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 16.500.000</p>
-                <h3 class="ad-card-title">Honda Beat Street 2023 Hitam KM Rendah Pajak Panjang</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Yogyakarta</span>
-                  <time datetime="2026-09-18">18 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Iklan Card 6 -->
-          <article class="ad-card">
-            <a href="detail.php?id=6" aria-label="Sofa L Minimalis - Rp 3.200.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-couch"></i></div>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 3.200.000</p>
-                <h3 class="ad-card-title">Sofa L Minimalis Bahan Oscar Anti Air Bisa Custom</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Bekasi</span>
-                  <time datetime="2026-09-17">17 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Iklan Card 7 -->
-          <article class="ad-card">
-            <a href="detail.php?id=7" aria-label="PS5 Slim Digital Edition - Rp 6.800.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-gamepad"></i></div>
-                <span class="ad-card-badge">Promo</span>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 6.800.000</p>
-                <h3 class="ad-card-title">PS5 Slim Digital Edition + 2 Controller Fullset Box</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Medan</span>
-                  <time datetime="2026-09-17">17 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Iklan Card 8 -->
-          <article class="ad-card">
-            <a href="detail.php?id=8" aria-label="Sepeda Lipat SELI - Rp 2.500.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-bicycle"></i></div>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 2.500.000</p>
-                <h3 class="ad-card-title">Sepeda Lipat 20 Inch 7 Speed Shimano Mulus Jarang Pakai</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Semarang</span>
-                  <time datetime="2026-09-16">16 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-        </div>
+          </div>
+        <?php else: ?>
+          <!-- State Kosong (Empty State) Saat Tidak Ada Iklan yang Cocok -->
+          <div class="empty-state-box">
+            <div class="empty-state-icon">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h3 class="empty-state-title">Iklan Tidak Ditemukan</h3>
+            <p class="empty-state-desc">
+              Maaf, kami tidak menemukan iklan yang sesuai dengan kata kunci atau kriteria filter yang Anda pilih. Coba gunakan kata kunci umum atau reset filter.
+            </p>
+            <div class="empty-state-actions">
+              <a href="index.php" class="btn btn-outline">
+                <i class="fa-solid fa-rotate-left"></i> Reset Filter
+              </a>
+              <a href="pasang-iklan.php" class="btn btn-solid-primary">
+                <i class="fa-solid fa-plus"></i> Pasang Iklan Sekarang
+              </a>
+            </div>
+          </div>
+        <?php endif; ?>
 
       </div>
     </section>
@@ -440,94 +507,48 @@
     </section>
 
 
-    <!-- ============ IKLAN REKOMENDASI ============ -->
-    <section class="section" aria-labelledby="heading-rekomendasi">
-      <div class="container">
+    <!-- ============ IKLAN REKOMENDASI (DINAMIS DARI DATABASE) ============ -->
+    <?php if (!empty($recommendations)): ?>
+      <section class="section" aria-labelledby="heading-rekomendasi">
+        <div class="container">
 
-        <div class="section-header">
-          <h2 id="heading-rekomendasi">Rekomendasi Untukmu</h2>
-          <a href="iklan.php?sort=rekomendasi">Lihat Semua →</a>
-        </div>
+          <div class="section-header">
+            <h2 id="heading-rekomendasi">Rekomendasi Untukmu</h2>
+            <a href="<?php echo htmlspecialchars(filterUrl(['sort' => 'rekomendasi']), ENT_QUOTES, 'UTF-8'); ?>">Lihat Semua <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
 
-        <div class="ad-grid">
-
-          <!-- Rekomendasi Card 1 -->
-          <article class="ad-card">
-            <a href="detail.php?id=9" aria-label="Samsung Galaxy S24 Ultra - Rp 15.900.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-mobile-screen-button"></i></div>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 15.900.000</p>
-                <h3 class="ad-card-title">Samsung Galaxy S24 Ultra 12/256 Titanium Gray SEIN</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Depok</span>
-                  <time datetime="2026-09-15">15 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Rekomendasi Card 2 -->
-          <article class="ad-card">
-            <a href="detail.php?id=10" aria-label="Meja Kerja Standing Desk - Rp 1.850.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-chair"></i></div>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 1.850.000</p>
-                <h3 class="ad-card-title">Standing Desk Elektrik 120x60 Adjustable Height Minimalis</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Bogor</span>
-                  <time datetime="2026-09-14">14 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Rekomendasi Card 3 -->
-          <article class="ad-card">
-            <a href="detail.php?id=11" aria-label="Kamera Canon EOS R50 - Rp 11.200.000">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-camera"></i></div>
-                <span class="ad-card-badge">Baru</span>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 11.200.000</p>
-                <h3 class="ad-card-title">Canon EOS R50 Kit 18-45mm IS STM Garansi Resmi Datascrip</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Malang</span>
-                  <time datetime="2026-09-13">13 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
-
-          <!-- Rekomendasi Card 4 -->
-          <article class="ad-card">
-            <a href="detail.php?id=12" aria-label="Kost Eksklusif Bulanan - Rp 2.000.000/bulan">
-              <div class="ad-card-image">
-                <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-building"></i></div>
-                <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
-              </div>
-              <div class="ad-card-body">
-                <p class="ad-card-price">Rp 2.000.000<small>/bulan</small></p>
-                <h3 class="ad-card-title">Kost Eksklusif Full Furnished AC WiFi Dekat Kampus UI</h3>
-                <div class="ad-card-meta">
-                  <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Depok</span>
-                  <time datetime="2026-09-12">12 Sep</time>
-                </div>
-              </div>
-            </a>
-          </article>
+          <div class="ad-grid">
+            <?php foreach ($recommendations as $rec): ?>
+              <article class="ad-card">
+                <a href="detail.php?id=<?php echo (int)$rec['id']; ?>" aria-label="<?php echo htmlspecialchars($rec['title'], ENT_QUOTES, 'UTF-8'); ?> - Rp <?php echo number_format($rec['price'], 0, ',', '.'); ?>">
+                  <div class="ad-card-image">
+                    <?php if (!empty($rec['image_path']) && file_exists(__DIR__ . '/' . $rec['image_path'])): ?>
+                      <img src="<?php echo htmlspecialchars($rec['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($rec['title'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy">
+                    <?php else: ?>
+                      <div class="img-placeholder" aria-hidden="true">
+                        <i class="<?php echo !empty($rec['category_icon']) ? htmlspecialchars($rec['category_icon'], ENT_QUOTES, 'UTF-8') : 'fa-solid fa-box-open'; ?>"></i>
+                      </div>
+                    <?php endif; ?>
+                    <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">
+                      <i class="fa-regular fa-heart"></i>
+                    </button>
+                  </div>
+                  <div class="ad-card-body">
+                    <p class="ad-card-price">Rp <?php echo number_format($rec['price'], 0, ',', '.'); ?></p>
+                    <h3 class="ad-card-title"><?php echo htmlspecialchars($rec['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                    <div class="ad-card-meta">
+                      <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($rec['location'], ENT_QUOTES, 'UTF-8'); ?></span>
+                      <time datetime="<?php echo substr($rec['created_at'], 0, 10); ?>"><?php echo date('d M', strtotime($rec['created_at'])); ?></time>
+                    </div>
+                  </div>
+                </a>
+              </article>
+            <?php endforeach; ?>
+          </div>
 
         </div>
-
-      </div>
-    </section>
+      </section>
+    <?php endif; ?>
 
   </main>
 
@@ -551,14 +572,17 @@
           </ul>
         </div>
 
-        <!-- Kolom 2: Kategori Populer -->
+        <!-- Kolom 2: Kategori Populer (Dinamis dari Tabel categories) -->
         <div class="footer-col">
           <h3>Kategori Populer</h3>
           <ul>
-            <li><a href="kategori.php?c=1">Mobil Bekas</a></li>
-            <li><a href="kategori.php?c=2">Motor Bekas</a></li>
-            <li><a href="kategori.php?c=3">Rumah & Apartemen</a></li>
-            <li><a href="kategori.php?c=4">HP & Laptop</a></li>
+            <?php foreach (array_slice($categories, 0, 4) as $popularCat): ?>
+              <li>
+                <a href="<?php echo htmlspecialchars(filterUrl(['c' => $popularCat['id']]), ENT_QUOTES, 'UTF-8'); ?>">
+                  <?php echo htmlspecialchars($popularCat['name'], ENT_QUOTES, 'UTF-8'); ?>
+                </a>
+              </li>
+            <?php endforeach; ?>
           </ul>
         </div>
 
@@ -590,8 +614,8 @@
       <div class="footer-bottom">
         <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
-          <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> ·
-          <a href="kebijakan-privasi.php">Kebijakan Privasi</a> ·
+          <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
+          <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;
           <a href="sitemap.xml">Sitemap</a>
         </nav>
       </div>

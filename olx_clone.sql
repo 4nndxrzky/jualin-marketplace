@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 21, 2026 at 01:13 PM
+-- Generation Time: Sep 23, 2026 at 02:40 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.3.13
 
@@ -13,18 +13,64 @@ START TRANSACTION;
 
 SET time_zone = "+00:00";
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */
-;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */
-;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */
-;
-/*!40101 SET NAMES utf8mb4 */
-;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `olx_clone`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+    `id` int NOT NULL,
+    `name` varchar(100) NOT NULL,
+    `email` varchar(100) NOT NULL,
+    `password` varchar(255) NOT NULL,
+    `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `created_at`) VALUES
+(1, 'Rizky Pratama', 'rizky@email.com', '$2y$10$TKzbrKe3qzfd6hf0.jevKeR4yn.yRaqlVn7dL9gFCJg32gcjBgqoO', '2024-01-15 10:00:00'),
+(2, 'Ananda Rizky', 'akunbaru291222@gmail.com', '$2y$10$TKzbrKe3qzfd6hf0.jevKeR4yn.yRaqlVn7dL9gFCJg32gcjBgqoO', '2026-09-21 20:56:17');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `categories`
+--
+
+CREATE TABLE `categories` (
+    `id` int NOT NULL,
+    `name` varchar(50) NOT NULL,
+    `icon` varchar(100) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `categories`
+--
+
+INSERT INTO `categories` (`id`, `name`, `icon`) VALUES
+(1, 'Mobil', 'fa-solid fa-car'),
+(2, 'Motor', 'fa-solid fa-motorcycle'),
+(3, 'Properti', 'fa-solid fa-house'),
+(4, 'Elektronik & Gadget', 'fa-solid fa-mobile-screen-button'),
+(5, 'Perabotan Rumah Tangga', 'fa-solid fa-couch'),
+(6, 'Fashion & Pakaian', 'fa-solid fa-shirt'),
+(7, 'Hobi & Olahraga', 'fa-solid fa-futbol'),
+(8, 'Jasa & Layanan', 'fa-solid fa-wrench'),
+(9, 'Lowongan Kerja', 'fa-solid fa-briefcase'),
+(10, 'Keperluan Lainnya', 'fa-solid fa-box-open');
 
 -- --------------------------------------------------------
 
@@ -43,6 +89,25 @@ CREATE TABLE `ads` (
     `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `ads`
+--
+
+INSERT INTO `ads` (`id`, `user_id`, `category_id`, `title`, `description`, `price`, `location`, `created_at`) VALUES
+(2, 2, 1, 'bmw m3 (2022)', 'BMW M3 Competition Sedan xDrive 3.0L Twin-Turbocharged Inline-6 NIK 2022 Toronto Red Metallic On Black. KM 9.000 Perak, kondisi sangat terawat istimewa.', 1585000000.00, 'Cilandak, Jakarta Selatan', '2026-09-23 11:31:06'),
+(3, 1, 1, 'Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat', 'Toyota Avanza 1.3 G Manual tahun 2020 warna Putih Mutiara. Tangan pertama dari baru, service record bengkel resmi Toyota. Odometer 38.500 km.', 185000000.00, 'Jakarta Selatan', '2026-09-20 10:00:00'),
+(4, 1, 4, 'iPhone 15 Pro Max 256GB Natural Titanium Fullset', 'iPhone 15 Pro Max 256GB warna Natural Titanium. Garansi resmi iBox aktif, battery health 98%, kelengkapan fullset original mulus tanpa lecet.', 18500000.00, 'Bandung', '2026-09-19 14:20:00'),
+(5, 1, 3, 'Rumah Cluster Minimalis 2 Lantai Siap Huni', 'Rumah baru cluster modern minimalis 2 lantai di lokasi strategis BSD / Tangerang Selatan. 3 kamar tidur, 2 kamar mandi, SHM, bebas banjir.', 750000000.00, 'Tangerang Selatan', '2026-09-19 09:15:00'),
+(6, 1, 4, 'MacBook Air M2 2023 8/256GB Midnight Garansi Resmi', 'MacBook Air M2 Chip 2023 warna Midnight. RAM 8GB SSD 256GB, cycle count rendah 45, garansi resmi aktif. Kondisi like new pemakaian pribadi.', 14200000.00, 'Surabaya', '2026-09-18 16:45:00'),
+(7, 1, 2, 'Honda Beat Street 2023 Hitam KM Rendah Pajak Panjang', 'Honda Beat Street CBS 2023 warna hitam doff. Plat D, surat lengkap STNK BPKB faktur, pajak panjang, KM 8.000 asli terawat siap pakai.', 16500000.00, 'Yogyakarta', '2026-09-18 11:30:00'),
+(8, 1, 5, 'Sofa L Minimalis Bahan Oscar Anti Air Bisa Custom', 'Sofa sudut model L modern untuk ruang keluarga. Menggunakan busa royal density tinggi dan bahan oscar premium tahan tumpahan air.', 3200000.00, 'Bekasi', '2026-09-17 15:10:00'),
+(9, 1, 7, 'PS5 Slim Digital Edition + 2 Controller Fullset Box', 'PlayStation 5 Slim Digital Version. Lengkap dengan 2 stik DualSense wireless controller, kabel HDMI ultra high speed, dus dan nota pembelian.', 6800000.00, 'Medan', '2026-09-17 13:00:00'),
+(10, 1, 7, 'Sepeda Lipat 20 Inch 7 Speed Shimano Mulus', 'Sepeda lipat frame alloy ringan 20 inch dengan groupset Shimano 7 speed. Rem cakram pakem, ban kenda tebal, mudah dilipat masuk bagasi mobil.', 2500000.00, 'Semarang', '2026-09-16 08:30:00'),
+(11, 1, 4, 'Samsung Galaxy S24 Ultra 12/256 Titanium Gray SEIN', 'Samsung Galaxy S24 Ultra 12GB RAM 256GB ROM Titanium Gray garansi resmi SEIN Indonesia. Fitur Galaxy AI lengkap, kamera 200MP tajam.', 15900000.00, 'Depok', '2026-09-15 17:00:00'),
+(12, 1, 5, 'Standing Desk Elektrik 120x60 Adjustable Height', 'Meja kerja elektrik dengan fitur naik turun otomatis dual motor. Memori 4 ketinggian preset, material kayu solid tebal kokoh.', 1850000.00, 'Bogor', '2026-09-14 10:20:00'),
+(13, 1, 7, 'Canon EOS R50 Kit 18-45mm IS STM Garansi Datascrip', 'Kamera mirrorless Canon EOS R50 plus lensa kit 18-45mm STM. Sangat cocok untuk content creator YouTube/TikTok, sensor 24MP 4K video.', 11200000.00, 'Malang', '2026-09-13 14:40:00'),
+(14, 1, 3, 'Kost Eksklusif Bulanan Full Furnished AC WiFi UI', 'Kamar kost eksklusif mahasiswa / karyawan dekat stasiun dan kampus UI. Fasilitas lengkap AC, WiFi, kamar mandi dalam water heater, kasur springbed.', 2000000.00, 'Depok', '2026-09-12 19:00:00');
+
 -- --------------------------------------------------------
 
 --
@@ -55,84 +120,15 @@ CREATE TABLE `ad_images` (
     `image_path` varchar(255) NOT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `categories`
+-- Dumping data for table `ad_images`
 --
 
-CREATE TABLE `categories` (
-    `id` int NOT NULL,
-    `name` varchar(50) NOT NULL,
-    `icon` varchar(100) DEFAULT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `categories`
---
-
-INSERT INTO
-    `categories` (`id`, `name`, `icon`)
-VALUES (1, 'Mobil', 'fa-solid fa-car'),
-    (
-        2,
-        'Motor',
-        'fa-solid fa-motorcycle'
-    ),
-    (
-        3,
-        'Properti',
-        'fa-solid fa-house'
-    ),
-    (
-        4,
-        'Elektronik & Gadget',
-        'fa-solid fa-mobile-screen-button'
-    ),
-    (
-        5,
-        'Perabotan Rumah Tangga',
-        'fa-solid fa-couch'
-    ),
-    (
-        6,
-        'Fashion & Pakaian',
-        'fa-solid fa-shirt'
-    ),
-    (
-        7,
-        'Hobi & Olahraga',
-        'fa-solid fa-futbol'
-    ),
-    (
-        8,
-        'Jasa & Layanan',
-        'fa-solid fa-wrench'
-    ),
-    (
-        9,
-        'Lowongan Kerja',
-        'fa-solid fa-briefcase'
-    ),
-    (
-        10,
-        'Keperluan Lainnya',
-        'fa-solid fa-box-open'
-    );
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
-
-CREATE TABLE `users` (
-    `id` int NOT NULL,
-    `name` varchar(100) NOT NULL,
-    `email` varchar(100) NOT NULL,
-    `password` varchar(255) NOT NULL,
-    `created_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+INSERT INTO `ad_images` (`id`, `ad_id`, `image_path`) VALUES
+(1, 2, 'uploads/ads/ad_72ec9dd8799d29c4_1790137866.jpg'),
+(2, 2, 'uploads/ads/ad_fe713594495e20d0_1790137866.jpg'),
+(3, 2, 'uploads/ads/ad_3bf0553371cec8c0_1790137866.jpg'),
+(4, 2, 'uploads/ads/ad_4e042ad50f386304_1790137866.jpg');
 
 --
 -- Indexes for dumped tables
@@ -172,23 +168,22 @@ ADD UNIQUE KEY `email` (`email`);
 --
 -- AUTO_INCREMENT for table `ads`
 --
-ALTER TABLE `ads` MODIFY `id` int NOT NULL AUTO_INCREMENT;
+ALTER TABLE `ads` MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT = 15;
 
 --
 -- AUTO_INCREMENT for table `ad_images`
 --
-ALTER TABLE `ad_images` MODIFY `id` int NOT NULL AUTO_INCREMENT;
+ALTER TABLE `ad_images` MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT = 5;
 
 --
 -- AUTO_INCREMENT for table `categories`
 --
-ALTER TABLE `categories` MODIFY `id` int NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 11;
+ALTER TABLE `categories` MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT = 11;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
-ALTER TABLE `users` MODIFY `id` int NOT NULL AUTO_INCREMENT;
+ALTER TABLE `users` MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT = 3;
 
 --
 -- Constraints for dumped tables
@@ -209,9 +204,6 @@ ADD CONSTRAINT `ad_images_ibfk_1` FOREIGN KEY (`ad_id`) REFERENCES `ads` (`id`);
 
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */
-;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */
-;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */
-;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
