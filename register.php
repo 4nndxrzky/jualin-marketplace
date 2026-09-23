@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Alamat email maksimal 100 karakter.";
     } else {
         // Query Prepared Statement: Cek duplikasi email di tabel users
-        $checkStmt = $db->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+        $checkStmt = $pdo->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
         $checkStmt->execute([$email]);
         if ($checkStmt->fetch()) {
             $errors[] = "Alamat email ini sudah terdaftar. Silakan gunakan email lain atau masuk ke akun Anda.";
@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Enkripsi password menggunakan BCRYPT (menghasilkan hash 60 karakter)
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-        $insertStmt = $db->prepare("
+        $insertStmt = $pdo->prepare("
             INSERT INTO users (name, email, password)
             VALUES (?, ?, ?)
         ");
@@ -149,6 +149,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   </script>
 
+  <!-- ==================== FONT AWESOME ICONS ==================== -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <!-- ==================== CSS EXTERNAL ==================== -->
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -167,16 +170,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           OLX<span>Clone</span>
         </a>
 
-        <!-- Search Bar -->
-        <form class="search-form" action="search.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
-          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, laptop, dan lainnya..." autocomplete="off">
-          <button type="submit" aria-label="Cari">🔍</button>
-        </form>
-
         <!-- Auth Action Navigasi -->
         <div class="header-actions">
-          <a href="index.php" class="btn btn-outline" aria-label="Kembali ke beranda">← Beranda</a>
+          <a href="index.php" class="btn btn-outline" aria-label="Kembali ke beranda">
+            <i class="fa-solid fa-arrow-left"></i> Beranda
+          </a>
           <a href="login.php" class="btn btn-primary" aria-label="Masuk ke akun yang sudah ada">
             Masuk
           </a>
@@ -197,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Header Box Form -->
         <div class="auth-header-box">
-          <span class="auth-icon" aria-hidden="true">🚀</span>
+          <span class="auth-icon" aria-hidden="true"><i class="fa-solid fa-user-plus"></i></span>
           <h1 id="register-heading" class="auth-title">Daftar Akun Baru</h1>
           <p class="auth-subtitle">Bergabung sekarang dan pasang iklan pertamamu dalam hitungan menit!</p>
         </div>
@@ -205,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- NOTIFIKASI ERROR (JIKA ADA) -->
         <?php if (!empty($errors)): ?>
           <div class="alert alert-danger" role="alert">
-            <span class="alert-icon" aria-hidden="true">⚠️</span>
+            <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
             <div class="alert-content">
               <strong>Pendaftaran Gagal:</strong>
               <ul style="margin: 6px 0 0 16px; list-style: disc;">
@@ -225,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="form-group">
             <label for="name" class="form-label">Nama Lengkap</label>
             <div class="input-wrapper">
-              <span class="input-icon" aria-hidden="true">👤</span>
+              <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
               <input
                 type="text"
                 id="name"
@@ -245,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="form-group">
             <label for="email" class="form-label">Alamat Email</label>
             <div class="input-wrapper">
-              <span class="input-icon" aria-hidden="true">✉️</span>
+              <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-envelope"></i></span>
               <input
                 type="email"
                 id="email"
@@ -266,7 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="form-group">
             <label for="password" class="form-label">Kata Sandi</label>
             <div class="input-wrapper">
-              <span class="input-icon" aria-hidden="true">🔒</span>
+              <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
               <input
                 type="password"
                 id="password"
@@ -281,7 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 type="button"
                 class="toggle-password"
                 aria-label="Tampilkan atau sembunyikan kata sandi">
-                👁️
+                <i class="fa-solid fa-eye"></i>
               </button>
             </div>
             <span class="form-hint">Kombinasi minimal 8 karakter (disarankan huruf besar, huruf kecil & angka).</span>
@@ -291,7 +289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="form-group">
             <label for="password_confirmation" class="form-label">Konfirmasi Kata Sandi</label>
             <div class="input-wrapper">
-              <span class="input-icon" aria-hidden="true">🔒</span>
+              <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
               <input
                 type="password"
                 id="password_confirmation"
@@ -306,7 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 type="button"
                 class="toggle-password"
                 aria-label="Tampilkan atau sembunyikan konfirmasi kata sandi">
-                👁️
+                <i class="fa-solid fa-eye"></i>
               </button>
             </div>
           </div>
@@ -330,21 +328,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         </form>
 
-        <!-- Garis Pemisah (Divider) -->
-        <div class="auth-divider" role="separator">
-          <span>atau daftar dengan</span>
-        </div>
-
-        <!-- Tombol Pendaftaran Alternatif / Sosial Media -->
-        <div class="social-auth-grid">
-          <button type="button" class="btn-social" aria-label="Daftar menggunakan akun Google">
-            <span aria-hidden="true">🌐</span> Daftar dengan Google
-          </button>
-          <button type="button" class="btn-social" aria-label="Daftar menggunakan Nomor Handphone">
-            <span aria-hidden="true">📱</span> Daftar dengan No. Handphone
-          </button>
-        </div>
-
         <!-- Link ke Halaman Login -->
         <p class="auth-footer-text">
           Sudah punya akun OLX Clone?
@@ -353,7 +336,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Informasi Keamanan & Privasi (Trust Badge) -->
         <div class="auth-trust-badge" role="status">
-          <span aria-hidden="true">🛡️</span>
+          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
           <span>Data pribadi Anda aman dan tidak akan dibagikan tanpa izin.</span>
         </div>
 
@@ -408,10 +391,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="footer-col">
           <h3>Ikuti Kami</h3>
           <div class="footer-social">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">📘</a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">📸</a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter/X">🐦</a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶️</a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter/X"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
           </div>
         </div>
 

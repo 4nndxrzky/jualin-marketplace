@@ -42,7 +42,7 @@ try {
     $db = $pdo;
 
     // Uncomment baris berikut saat ingin mengetes koneksi langsung lewat browser/terminal:
-    // echo "✅ Koneksi database PDO ke '{$dbname}' berhasil!";
+    // echo "[OK] Koneksi database PDO ke '{$dbname}' berhasil!";
 } catch (PDOException $e) {
     // Catat log error internal untuk developer
     error_log("Database Connection Error: " . $e->getMessage());

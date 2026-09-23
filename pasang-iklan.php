@@ -1,4 +1,16 @@
 <?php
+/**
+ * ============================================================================
+ * HALAMAN PASANG IKLAN (POST AD) — DINAMIS PDO & MYSQL
+ * Terkoneksi dengan Database: olx_clone
+ * Tabel Terkait:
+ *   - ads (user_id, category_id, title, description, price, location, created_at)
+ *   - ad_images (ad_id, image_path)
+ *   - categories (id, name, icon)
+ *   - users (id, name, email)
+ * ============================================================================
+ */
+
 session_start();
 require_once __DIR__ . '/koneksi.php';
 
@@ -14,6 +26,173 @@ $currentUser = [
     'name'  => $_SESSION['user_name'] ?? 'Pengguna',
     'email' => $_SESSION['user_email'] ?? ''
 ];
+
+// Ambil data kategori secara dinamis dari tabel categories
+$stmtCategories = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+$categories = $stmtCategories->fetchAll();
+
+$errors        = [];
+$title         = '';
+$category_id   = '';
+$price         = '';
+$location      = '';
+$description   = '';
+$is_negotiable = 1;
+
+// Proses Form Submission (POST)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $title         = trim($_POST['title'] ?? '');
+    $category_id   = (int) ($_POST['category_id'] ?? 0);
+    $price         = trim($_POST['price'] ?? '');
+    $location      = trim($_POST['location'] ?? '');
+    $description   = trim($_POST['description'] ?? '');
+    $agree_rules   = isset($_POST['agree_rules']);
+    $is_negotiable = isset($_POST['is_negotiable']) ? 1 : 0;
+
+    // 1. Validasi Judul (ads.title - VARCHAR 50)
+    if (empty($title)) {
+        $errors[] = "Judul iklan wajib diisi.";
+    } elseif (mb_strlen($title) > 50) {
+        $errors[] = "Judul iklan maksimal 50 karakter (sesuai spesifikasi sistem).";
+    }
+
+    // 2. Validasi Kategori (ads.category_id)
+    if ($category_id <= 0) {
+        $errors[] = "Silakan pilih kategori iklan dari dropdown.";
+    } else {
+        $catCheck = $pdo->prepare("SELECT id FROM categories WHERE id = ?");
+        $catCheck->execute([$category_id]);
+        if (!$catCheck->fetch()) {
+            $errors[] = "Kategori yang dipilih tidak terdaftar di sistem.";
+        }
+    }
+
+    // 3. Validasi Harga (ads.price - DECIMAL 15,2)
+    if ($price === '' || !is_numeric($price) || (float) $price < 0) {
+        $errors[] = "Harga barang wajib diisi dengan nominal angka yang valid (contoh: 185000000).";
+    }
+
+    // 4. Validasi Lokasi (ads.location - VARCHAR 100)
+    if (empty($location)) {
+        $errors[] = "Lokasi barang (kota/wilayah) wajib diisi.";
+    } elseif (mb_strlen($location) > 100) {
+        $errors[] = "Lokasi barang maksimal 100 karakter.";
+    }
+
+    // 5. Validasi Deskripsi (ads.description - TEXT)
+    if (empty($description)) {
+        $errors[] = "Deskripsi barang wajib diisi secara jelas dan jujur.";
+    }
+
+    // 6. Validasi Syarat & Ketentuan
+    if (!$agree_rules) {
+        $errors[] = "Anda wajib menyetujui Syarat & Ketentuan Pasang Iklan.";
+    }
+
+    // 7. Penanganan Unggah Foto (ad_images)
+    $uploadedImages = [];
+    $uploadDir = __DIR__ . '/uploads/ads/';
+
+    if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $allowedMimes = [
+            'image/jpeg' => 'jpg',
+            'image/pjpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp'
+        ];
+        $maxFileSize = 5 * 1024 * 1024; // 5 MB
+        $totalFiles = count($_FILES['images']['name']);
+
+        if ($totalFiles > 5) {
+            $errors[] = "Maksimal hanya dapat mengunggah 5 foto barang.";
+        }
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+        for ($i = 0; $i < min($totalFiles, 5); $i++) {
+            if ($_FILES['images']['error'][$i] === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+            if ($_FILES['images']['error'][$i] !== UPLOAD_ERR_OK) {
+                $errors[] = "Gagal mengunggah foto ke-" . ($i + 1) . ".";
+                continue;
+            }
+
+            $fileTmp  = $_FILES['images']['tmp_name'][$i];
+            $fileSize = $_FILES['images']['size'][$i];
+            $mimeType = $finfo->file($fileTmp);
+
+            if (!array_key_exists($mimeType, $allowedMimes)) {
+                $errors[] = "Format foto ke-" . ($i + 1) . " tidak didukung. Harap gunakan format JPG, PNG, atau WebP.";
+                continue;
+            }
+
+            if ($fileSize > $maxFileSize) {
+                $errors[] = "Ukuran foto ke-" . ($i + 1) . " melebihi batas 5MB.";
+                continue;
+            }
+
+            $extension = $allowedMimes[$mimeType];
+            $newFileName = 'ad_' . bin2hex(random_bytes(8)) . '_' . time() . '.' . $extension;
+            $destination = $uploadDir . $newFileName;
+
+            if (move_uploaded_file($fileTmp, $destination)) {
+                $uploadedImages[] = 'uploads/ads/' . $newFileName;
+            } else {
+                $errors[] = "Terjadi kegagalan saat menyimpan file foto ke-" . ($i + 1) . ".";
+            }
+        }
+    }
+
+    // Eksekusi Database dengan Transaksi PDO
+    if (empty($errors)) {
+        try {
+            $pdo->beginTransaction();
+
+            // Simpan data iklan ke tabel ads
+            $stmt = $pdo->prepare("INSERT INTO ads (user_id, category_id, title, description, price, location, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+            $stmt->execute([
+                $currentUser['id'],
+                $category_id,
+                $title,
+                $description,
+                (float) $price,
+                $location
+            ]);
+
+            $newAdId = (int) $pdo->lastInsertId();
+
+            // Simpan referensi foto ke tabel ad_images
+            if (!empty($uploadedImages)) {
+                $imgStmt = $pdo->prepare("INSERT INTO ad_images (ad_id, image_path) VALUES (?, ?)");
+                foreach ($uploadedImages as $imgPath) {
+                    $imgStmt->execute([$newAdId, $imgPath]);
+                }
+            }
+
+            $pdo->commit();
+
+            $_SESSION['flash_success'] = "Selamat! Iklan \"" . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . "\" berhasil dipasang dan sudah tayang.";
+            header("Location: detail.php?id=" . $newAdId);
+            exit;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            // Bersihkan file yang sudah sempat terunggah jika DB rollback
+            foreach ($uploadedImages as $relativePath) {
+                $fullPath = __DIR__ . '/' . $relativePath;
+                if (file_exists($fullPath)) {
+                    unlink($fullPath);
+                }
+            }
+            error_log("Gagal memasang iklan: " . $e->getMessage());
+            $errors[] = "Terjadi kesalahan internal saat menyimpan iklan ke database: " . $e->getMessage();
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -81,6 +260,9 @@ $currentUser = [
     }
   </script>
 
+  <!-- ==================== FONT AWESOME ICONS ==================== -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <!-- ==================== CSS EXTERNAL ==================== -->
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -103,24 +285,28 @@ $currentUser = [
         <form class="search-form" action="search.php" method="GET" role="search" aria-label="Cari iklan">
           <label for="search-input" class="sr-only">Cari di OLX Clone</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, laptop, dan lainnya..." autocomplete="off">
-          <button type="submit" aria-label="Cari">🔍</button>
+          <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
 
         <!-- Auth Action Navigasi -->
         <div class="header-actions">
-          <a href="index.php" class="btn btn-outline" aria-label="Kembali ke beranda">← Beranda</a>
+          <a href="index.php" class="btn btn-outline" aria-label="Kembali ke beranda">
+            <i class="fa-solid fa-arrow-left"></i> Beranda
+          </a>
           <div class="user-menu-wrapper">
             <button type="button" class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
               <span class="user-avatar-sm"><?= strtoupper(substr($currentUser['name'], 0, 1)) ?></span>
               <span class="user-menu-name"><?= htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></span>
-              <span aria-hidden="true">▾</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
             </button>
             <div class="user-dropdown" role="menu">
               <div style="padding: 10px 16px; border-bottom: 1px solid var(--gray-200);">
                 <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?= htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></strong>
                 <small style="color: var(--text-muted); font-size: 0.75rem;"><?= htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?></small>
               </div>
-              <a href="logout.php" class="dropdown-item danger-item" role="menuitem">🚪 Keluar (Logout)</a>
+              <a href="logout.php" class="dropdown-item danger-item" role="menuitem">
+                <i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)
+              </a>
             </div>
           </div>
         </div>
@@ -145,11 +331,6 @@ $currentUser = [
 
   <!-- ================================================================
        KONTEN UTAMA: HALAMAN PASANG IKLAN
-       Tabel terkait:
-         - ads (user_id, category_id, title, description, price, location)
-         - ad_images (ad_id, image_path)
-         - categories (id, name, icon)
-         - users (id, name, email)
        ================================================================ -->
   <main class="container" id="main-content" role="main">
     <div class="post-ad-layout">
@@ -163,103 +344,48 @@ $currentUser = [
           <p>Isi rincian barang yang ingin Anda jual di bawah ini untuk menarik lebih banyak pembeli potensial.</p>
         </div>
 
+        <!-- NOTIFIKASI ERROR JIKA ADA -->
+        <?php if (!empty($errors)): ?>
+          <div class="alert alert-danger" role="alert" style="margin-bottom: 24px;">
+            <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <div class="alert-content">
+              <strong>Gagal Memasang Iklan:</strong>
+              <ul style="margin: 6px 0 0 16px; list-style: disc;">
+                <?php foreach ($errors as $err): ?>
+                  <li><?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
+                <?php endforeach; ?>
+              </ul>
+            </div>
+            <button type="button" class="alert-close" aria-label="Tutup notifikasi">&times;</button>
+          </div>
+        <?php endif; ?>
+
         <!-- FORM UTAMA DENGAN ENCTYPE MULTIPART -->
         <form class="post-ad-form" action="pasang-iklan.php" method="POST" enctype="multipart/form-data">
 
-          <!-- CSRF Token (Placeholder Backend PHP) -->
-          <!-- <input type="hidden" name="csrf_token" value="<?php // echo $_SESSION['csrf_token'] ?? ''; ?>"> -->
-
-          <!-- ==================== CARD 1: PILIH KATEGORI (categories table) ==================== -->
+          <!-- ==================== CARD 1: PILIH KATEGORI (categories table dinamis via dropdown) ==================== -->
           <section class="post-ad-card" aria-labelledby="heading-cat">
             <h2 id="heading-cat" class="post-ad-card-title">
-              <span aria-hidden="true">🏷️</span> 1. Pilih Kategori Iklan
+              <i class="fa-solid fa-tags" aria-hidden="true"></i> 1. Pilih Kategori Iklan
             </h2>
             <p class="form-hint" style="margin-bottom: 14px;">
-              Pilih kategori yang paling sesuai dengan barang atau jasa yang Anda iklankan.
+              Pilih kategori yang paling sesuai dengan barang atau jasa yang Anda iklankan. Data diambil secara dinamis dari database.
             </p>
 
-            <div class="category-picker-grid" role="radiogroup" aria-label="Pilihan Kategori">
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="1" required checked>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">🚗</span>
-                  <span class="cat-picker-name">Mobil</span>
-                </div>
-              </label>
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="2" required>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">🏍️</span>
-                  <span class="cat-picker-name">Motor</span>
-                </div>
-              </label>
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="3" required>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">🏠</span>
-                  <span class="cat-picker-name">Properti</span>
-                </div>
-              </label>
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="4" required>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">📱</span>
-                  <span class="cat-picker-name">Elektronik</span>
-                </div>
-              </label>
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="5" required>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">🛋️</span>
-                  <span class="cat-picker-name">Perabotan</span>
-                </div>
-              </label>
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="6" required>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">👕</span>
-                  <span class="cat-picker-name">Fashion</span>
-                </div>
-              </label>
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="7" required>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">⚽</span>
-                  <span class="cat-picker-name">Hobi & Olahraga</span>
-                </div>
-              </label>
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="8" required>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">🔧</span>
-                  <span class="cat-picker-name">Jasa</span>
-                </div>
-              </label>
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="9" required>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">💼</span>
-                  <span class="cat-picker-name">Lowongan</span>
-                </div>
-              </label>
-
-              <label class="category-radio-label">
-                <input type="radio" name="category_id" value="10" required>
-                <div class="cat-picker-content">
-                  <span class="cat-picker-icon" aria-hidden="true">📦</span>
-                  <span class="cat-picker-name">Lainnya</span>
-                </div>
-              </label>
-
+            <div class="form-group">
+              <label for="category_id" class="form-label">Kategori Barang *</label>
+              <div class="input-wrapper">
+                <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-list"></i></span>
+                <select name="category_id" id="category_id" class="form-control" required aria-required="true">
+                  <option value="" disabled <?= empty($category_id) ? 'selected' : '' ?>>-- Pilih Kategori Barang --</option>
+                  <?php foreach ($categories as $cat): ?>
+                    <option value="<?= (int) $cat['id'] ?>" <?= ((string) $category_id === (string) $cat['id']) ? 'selected' : '' ?>>
+                      <?= htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <span class="form-hint">Klik dropdown di atas untuk memilih kategori yang sesuai dengan barang Anda.</span>
             </div>
           </section>
 
@@ -267,12 +393,12 @@ $currentUser = [
           <!-- ==================== CARD 2: UNGGAH FOTO (ad_images table) ==================== -->
           <section class="post-ad-card" aria-labelledby="heading-photos">
             <h2 id="heading-photos" class="post-ad-card-title">
-              <span aria-hidden="true">📸</span> 2. Unggah Foto Barang (Maks. 5 Foto)
+              <i class="fa-solid fa-camera" aria-hidden="true"></i> 2. Unggah Foto Barang (Maks. 5 Foto)
             </h2>
 
             <!-- Dropzone Upload -->
             <label class="photo-upload-zone" for="ad-images-input">
-              <span class="photo-upload-icon" aria-hidden="true">📁</span>
+              <span class="photo-upload-icon" aria-hidden="true"><i class="fa-solid fa-cloud-arrow-up"></i></span>
               <span class="photo-upload-text">Klik di sini untuk memilih foto atau seret foto ke sini</span>
               <span class="photo-upload-subtext">Format: JPG, JPEG, PNG, atau WebP (Maksimal 5MB per foto)</span>
               <input
@@ -285,29 +411,29 @@ $currentUser = [
             </label>
 
             <span id="photo-rules-text" class="form-hint" style="margin-top: 10px; display: block;">
-              💡 <strong>Tips:</strong> Foto pertama akan otomatis menjadi foto sampul utama pada halaman pencarian.
+              <i class="fa-solid fa-lightbulb" style="color: var(--accent);"></i> <strong>Tips:</strong> Foto pertama akan otomatis menjadi foto sampul utama pada halaman pencarian.
             </span>
 
             <!-- Slot Pratinjau Foto (Preview Grid) -->
             <div class="photo-slots-grid" aria-label="Slot Foto">
               <div class="photo-slot primary-slot" title="Foto Utama">
-                <span aria-hidden="true">📷</span>
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
                 <span>Foto 1</span>
               </div>
               <div class="photo-slot" title="Foto Tambahan 2">
-                <span aria-hidden="true">📷</span>
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
                 <span>Foto 2</span>
               </div>
               <div class="photo-slot" title="Foto Tambahan 3">
-                <span aria-hidden="true">📷</span>
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
                 <span>Foto 3</span>
               </div>
               <div class="photo-slot" title="Foto Tambahan 4">
-                <span aria-hidden="true">📷</span>
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
                 <span>Foto 4</span>
               </div>
               <div class="photo-slot" title="Foto Tambahan 5">
-                <span aria-hidden="true">📷</span>
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
                 <span>Foto 5</span>
               </div>
             </div>
@@ -317,14 +443,14 @@ $currentUser = [
           <!-- ==================== CARD 3: DETAIL IKLAN (ads.title, ads.description) ==================== -->
           <section class="post-ad-card" aria-labelledby="heading-info">
             <h2 id="heading-info" class="post-ad-card-title">
-              <span aria-hidden="true">📝</span> 3. Detail & Informasi Iklan
+              <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> 3. Detail & Informasi Iklan
             </h2>
 
             <!-- Judul Iklan (ads.title - VARCHAR 50) -->
             <div class="form-group" style="margin-bottom: 20px;">
               <div class="char-counter-row">
                 <label for="title" class="form-label">Judul Iklan *</label>
-                <span id="title-counter" class="char-count">0 / 50 karakter</span>
+                <span id="title-counter" class="char-count"><?= mb_strlen($title) ?> / 50 karakter</span>
               </div>
               <input
                 type="text"
@@ -335,7 +461,7 @@ $currentUser = [
                 placeholder="Contoh: Toyota Avanza 1.3 G MT 2020 Putih Mulus"
                 required
                 maxlength="50"
-                oninput="document.getElementById('title-counter').innerText = this.value.length + ' / 50 karakter';"
+                value="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>"
                 aria-required="true">
               <span class="form-hint">Maksimal 50 karakter. Tulis merek, tipe, atau fitur unggulan barang Anda.</span>
             </div>
@@ -351,7 +477,7 @@ $currentUser = [
                 placeholder="Jelaskan kondisi barang secara jujur, kelengkapan aksesori, riwayat servis/pemakaian, alasan dijual, dan informasi penting lainnya..."
                 required
                 rows="6"
-                aria-required="true"></textarea>
+                aria-required="true"><?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?></textarea>
               <span class="form-hint">Iklan dengan deskripsi detail mendapatkan respons pembeli 3x lebih banyak.</span>
             </div>
           </section>
@@ -360,7 +486,7 @@ $currentUser = [
           <!-- ==================== CARD 4: TENTUKAN HARGA (ads.price) ==================== -->
           <section class="post-ad-card" aria-labelledby="heading-price">
             <h2 id="heading-price" class="post-ad-card-title">
-              <span aria-hidden="true">💰</span> 4. Tentukan Harga
+              <i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i> 4. Tentukan Harga
             </h2>
 
             <!-- Input Harga dengan Prefix Rp (ads.price - DECIMAL(15,2)) -->
@@ -376,6 +502,7 @@ $currentUser = [
                   min="0"
                   step="1000"
                   required
+                  value="<?= htmlspecialchars($price, ENT_QUOTES, 'UTF-8') ?>"
                   aria-required="true">
               </div>
               <span class="form-hint">Tuliskan nominal angka saja tanpa titik atau koma (contoh: 185000000).</span>
@@ -383,7 +510,7 @@ $currentUser = [
 
             <!-- Checkbox Nego -->
             <label class="checkbox-label" for="is_negotiable">
-              <input type="checkbox" id="is_negotiable" name="is_negotiable" value="1" checked>
+              <input type="checkbox" id="is_negotiable" name="is_negotiable" value="1" <?= $is_negotiable ? 'checked' : '' ?>>
               <span>Bisa Nego (Buka penawaran harga santai)</span>
             </label>
           </section>
@@ -392,13 +519,13 @@ $currentUser = [
           <!-- ==================== CARD 5: LOKASI PENJUAL (ads.location) ==================== -->
           <section class="post-ad-card" aria-labelledby="heading-location">
             <h2 id="heading-location" class="post-ad-card-title">
-              <span aria-hidden="true">📍</span> 5. Lokasi Barang
+              <i class="fa-solid fa-location-dot" aria-hidden="true"></i> 5. Lokasi Barang
             </h2>
 
             <div class="form-group">
               <label for="location" class="form-label">Kota / Wilayah *</label>
               <div class="input-wrapper">
-                <span class="input-icon" aria-hidden="true">📍</span>
+                <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
                 <input
                   type="text"
                   id="location"
@@ -407,6 +534,7 @@ $currentUser = [
                   placeholder="Contoh: Jakarta Selatan, Cilandak"
                   required
                   maxlength="100"
+                  value="<?= htmlspecialchars($location, ENT_QUOTES, 'UTF-8') ?>"
                   aria-required="true">
               </div>
               <span class="form-hint">Cantumkan nama kota dan kecamatan agar calon pembeli terdekat mudah menemukan iklan Anda.</span>
@@ -417,7 +545,7 @@ $currentUser = [
           <!-- ==================== CARD 6: KONFIRMASI PENJUAL (users table) ==================== -->
           <section class="post-ad-card" aria-labelledby="heading-seller">
             <h2 id="heading-seller" class="post-ad-card-title">
-              <span aria-hidden="true">👤</span> 6. Profil Penjual
+              <i class="fa-solid fa-user" aria-hidden="true"></i> 6. Profil Penjual
             </h2>
 
             <div style="display: flex; align-items: center; gap: 14px; background-color: var(--gray-50); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--gray-200);">
@@ -446,7 +574,7 @@ $currentUser = [
             </label>
 
             <button type="submit" class="btn btn-solid-primary btn-block" style="font-size: 1.05rem; padding: 14px;">
-              🚀 Pasang Iklan Sekarang
+              <i class="fa-solid fa-paper-plane"></i> Pasang Iklan Sekarang
             </button>
           </div>
 
@@ -461,7 +589,7 @@ $currentUser = [
         <!-- Card Tips Cepat Laku -->
         <div class="tips-card">
           <div class="tips-card-header">
-            <span aria-hidden="true">💡</span>
+            <i class="fa-solid fa-lightbulb" style="color: var(--accent); font-size: 1.2rem;"></i>
             <h3>Tips Iklan Cepat Laku</h3>
           </div>
           <ul class="tips-list">
@@ -498,10 +626,10 @@ $currentUser = [
 
         <!-- Card Aturan Pasang Iklan -->
         <div class="rules-card">
-          <h3><span aria-hidden="true">🛡️</span> Aturan Pasang Iklan</h3>
+          <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> Aturan Pasang Iklan</h3>
           <ul>
             <li>Dilarang menjual barang ilegal, palsu/replika, senjata tajam, obat terlarang, atau hewan dilindungi.</li>
-            <li>Dilarang membuat iklan ganda (*spam duplikasi*) untuk satu produk yang sama.</li>
+            <li>Dilarang membuat iklan ganda (<em>spam duplikasi</em>) untuk satu produk yang sama.</li>
             <li>Pastikan nomor WhatsApp dan chat aktif untuk merespons calon pembeli dengan cepat.</li>
             <li>OLX Clone berhak menghapus iklan yang melanggar kebijakan marketplace tanpa pemberitahuan.</li>
           </ul>
@@ -558,10 +686,10 @@ $currentUser = [
         <div class="footer-col">
           <h3>Ikuti Kami</h3>
           <div class="footer-social">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">📘</a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">📸</a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter/X">🐦</a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶️</a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter/X"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
           </div>
         </div>
 
@@ -585,4 +713,3 @@ $currentUser = [
 </body>
 
 </html>
-

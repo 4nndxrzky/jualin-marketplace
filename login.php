@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 2. Autentikasi Pengguna ke Database
     if (empty($errors)) {
         // Query Prepared Statement mencari user berdasarkan email
-        $stmt = $db->prepare("SELECT id, name, email, password FROM users WHERE email = ? LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, name, email, password FROM users WHERE email = ? LIMIT 1");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
@@ -141,6 +141,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   </script>
 
+  <!-- ==================== FONT AWESOME ICONS ==================== -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <!-- ==================== CSS EXTERNAL ==================== -->
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -159,16 +162,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           OLX<span>Clone</span>
         </a>
 
-        <!-- Search Bar Sederhana -->
-        <form class="search-form" action="search.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
-          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, laptop, dan lainnya..." autocomplete="off">
-          <button type="submit" aria-label="Cari">🔍</button>
-        </form>
-
         <!-- Auth Action Navigasi -->
         <div class="header-actions">
-          <a href="index.php" class="btn btn-outline" aria-label="Kembali ke beranda">← Beranda</a>
+          <a href="index.php" class="btn btn-outline" aria-label="Kembali ke beranda">
+            <i class="fa-solid fa-arrow-left"></i> Beranda
+          </a>
           <a href="register.php" class="btn btn-primary" aria-label="Daftar akun baru">
             Daftar
           </a>
@@ -189,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Header Box Form -->
         <div class="auth-header-box">
-          <span class="auth-icon" aria-hidden="true">🔑</span>
+          <span class="auth-icon" aria-hidden="true"><i class="fa-solid fa-key"></i></span>
           <h1 id="auth-heading" class="auth-title">Masuk ke Akun Anda</h1>
           <p class="auth-subtitle">Kelola iklan, chat dengan calon pembeli, dan pantau barang favoritmu.</p>
         </div>
@@ -197,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- NOTIFIKASI SUKSES FLASH (MISAL SETELAH REGISTER ATAU LOGOUT) -->
         <?php if (!empty($successMessage)): ?>
           <div class="alert alert-success" role="alert">
-            <span class="alert-icon" aria-hidden="true">✅</span>
+            <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
             <div class="alert-content">
               <?= htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8') ?>
             </div>
@@ -208,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- NOTIFIKASI ERROR (JIKA ADA) -->
         <?php if (!empty($errors)): ?>
           <div class="alert alert-danger" role="alert">
-            <span class="alert-icon" aria-hidden="true">⚠️</span>
+            <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
             <div class="alert-content">
               <strong>Gagal Masuk:</strong>
               <ul style="margin: 6px 0 0 16px; list-style: disc;">
@@ -228,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="form-group">
             <label for="email" class="form-label">Alamat Email</label>
             <div class="input-wrapper">
-              <span class="input-icon" aria-hidden="true">✉️</span>
+              <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-envelope"></i></span>
               <input
                 type="email"
                 id="email"
@@ -250,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <a href="lupa-password.php" class="auth-link-sm" tabindex="0">Lupa kata sandi?</a>
             </div>
             <div class="input-wrapper">
-              <span class="input-icon" aria-hidden="true">🔒</span>
+              <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
               <input
                 type="password"
                 id="password"
@@ -264,7 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 type="button"
                 class="toggle-password"
                 aria-label="Tampilkan atau sembunyikan kata sandi">
-                👁️
+                <i class="fa-solid fa-eye"></i>
               </button>
             </div>
           </div>
@@ -284,21 +282,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         </form>
 
-        <!-- Garis Pemisah (Divider) -->
-        <div class="auth-divider" role="separator">
-          <span>atau masuk dengan</span>
-        </div>
-
-        <!-- Tombol Login Alternatif / Media Sosial -->
-        <div class="social-auth-grid">
-          <button type="button" class="btn-social" aria-label="Masuk menggunakan akun Google">
-            <span aria-hidden="true">🌐</span> Lanjutkan dengan Google
-          </button>
-          <button type="button" class="btn-social" aria-label="Masuk menggunakan Nomor Handphone">
-            <span aria-hidden="true">📱</span> Lanjutkan dengan No. Handphone
-          </button>
-        </div>
-
         <!-- Link Navigasi Daftar Akun Baru -->
         <p class="auth-footer-text">
           Belum punya akun OLX Clone?
@@ -307,7 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Informasi Keamanan (Trust Badge) -->
         <div class="auth-trust-badge" role="status">
-          <span aria-hidden="true">🛡️</span>
+          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
           <span>Data pribadi dan transaksi Anda terlindungi enkripsi 256-bit.</span>
         </div>
 
@@ -369,10 +352,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="footer-col">
           <h3>Ikuti Kami</h3>
           <div class="footer-social">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">📘</a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">📸</a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter/X">🐦</a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶️</a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter/X"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
           </div>
         </div>
 

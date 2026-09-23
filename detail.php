@@ -1,6 +1,58 @@
 <?php
 session_start();
 require_once __DIR__ . '/koneksi.php';
+
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+unset($_SESSION['flash_success']);
+
+// Ambil kategori secara dinamis dari tabel categories
+$stmtCat = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+$categories = $stmtCat->fetchAll();
+
+// Ambil data iklan berdasarkan parameter ID di URL
+$adId = isset($_GET['id']) ? (int) $_GET['id'] : 1;
+$ad = null;
+$adImages = [];
+
+if ($adId > 0) {
+    $stmtAd = $pdo->prepare("
+        SELECT a.*, c.name AS category_name, c.icon AS category_icon,
+               u.name AS seller_name, u.email AS seller_email, u.created_at AS seller_joined
+        FROM ads a
+        LEFT JOIN categories c ON a.category_id = c.id
+        LEFT JOIN users u ON a.user_id = u.id
+        WHERE a.id = ?
+        LIMIT 1
+    ");
+    $stmtAd->execute([$adId]);
+    $ad = $stmtAd->fetch();
+
+    if ($ad) {
+        $stmtImgs = $pdo->prepare("SELECT * FROM ad_images WHERE ad_id = ? ORDER BY id ASC");
+        $stmtImgs->execute([$adId]);
+        $adImages = $stmtImgs->fetchAll();
+    }
+}
+
+// Fallback data contoh jika iklan tidak ditemukan
+if (!$ad) {
+    $ad = [
+        'id'            => 1,
+        'title'         => 'Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat',
+        'price'         => 185000000,
+        'location'      => 'Jakarta Selatan',
+        'description'   => "Dijual cepat mobil keluarga idaman: Toyota Avanza 1.3 G Manual tahun 2020 warna Putih Mutiara.\n\nKondisi Kendaraan:\n- Odometer asli 38.500 km (slow moving), service record lengkap berkala di bengkel resmi Toyota Astra Motor.\n- Mesin halus, kering, no rembes, tarikan enteng, dan bensin sangat irit.\n- AC double blower sangat dingin dan berfungsi normal.\n- Kaki-kaki senyap tanpa bunyi, ban 4 buah masih tebal 85% (Bridgestone) + ban serep belum pernah turun.\n- Interior original fabric bersih, wangi, tidak merokok. Headunit touchscreen support Bluetooth & USB.\n- Bodi mulus 95%, cat original pabrik, bebas tabrakan besar dan bebas banjir.\n\nKelengkapan Dokumen & Legalitas:\n- STNK, BPKB, dan Faktur Pembelian asli lengkap di tangan.\n- Buku manual, buku servis, dan kunci kontak serep lengkap.\n- Pajak hidup panjang sampai Oktober 2026, plat B Jakarta Selatan (Ganjil).\n\nHarga nego santai dan sopan setelah cek unit di lokasi.",
+        'category_name' => 'Mobil',
+        'category_icon' => 'fa-solid fa-car',
+        'seller_name'   => 'Rizky Pratama',
+        'seller_email'  => 'rizky@email.com',
+        'seller_joined' => '2024-01-15 10:00:00',
+        'created_at'    => '2026-09-20 14:30:00'
+    ];
+}
+
+$pageTitle = htmlspecialchars($ad['title']) . " — OLX Clone";
+$priceFormatted = "Rp " . number_format($ad['price'], 0, ',', '.');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -11,94 +63,31 @@ require_once __DIR__ . '/koneksi.php';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <!-- ==================== SEO META TAGS (DINAMIS DARI TABEL ads) ==================== -->
-  <title>Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat — Jual Beli Mobil Bekas | OLX Clone</title>
-  <meta name="description" content="Jual Toyota Avanza 1.3 G MT 2020 warna putih di Jakarta Selatan seharga Rp 185.000.000. Kondisi mulus terawat tangan pertama, surat-surat lengkap, pajak hidup. Cek selengkapnya di OLX Clone!">
-  <meta name="keywords" content="Toyota Avanza 2020 bekas, jual mobil Avanza Jakarta Selatan, mobil bekas murah, OLX Clone mobil, bursa mobil bekas">
-  <meta name="author" content="Rizky Pratama">
+  <!-- ==================== SEO META TAGS (DINAMIS) ==================== -->
+  <title><?= $pageTitle ?></title>
+  <meta name="description" content="<?= htmlspecialchars(mb_substr(strip_tags($ad['description']), 0, 160)) ?>">
+  <meta name="keywords" content="<?= htmlspecialchars($ad['title']) ?>, jual beli online, OLX Clone">
+  <meta name="author" content="<?= htmlspecialchars($ad['seller_name'] ?? 'Penjual OLX Clone') ?>">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://olxclone.local/detail.php?id=1">
+  <link rel="canonical" href="https://olxclone.local/detail.php?id=<?= (int) $ad['id'] ?>">
 
-  <!-- ==================== OPEN GRAPH (Social Media & WhatsApp) ==================== -->
+  <!-- ==================== OPEN GRAPH ==================== -->
   <meta property="og:type" content="product">
-  <meta property="og:title" content="Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat — OLX Clone">
-  <meta property="og:description" content="Jual Toyota Avanza 1.3 G MT 2020 di Jakarta Selatan seharga Rp 185.000.000. Tangan pertama, service record resmi.">
-  <meta property="og:url" content="https://olxclone.local/detail.php?id=1">
-  <meta property="og:image" content="https://olxclone.local/assets/images/sample-avanza.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  <meta property="og:title" content="<?= $pageTitle ?>">
+  <meta property="og:description" content="<?= htmlspecialchars(mb_substr(strip_tags($ad['description']), 0, 120)) ?>">
+  <meta property="og:url" content="https://olxclone.local/detail.php?id=<?= (int) $ad['id'] ?>">
   <meta property="og:site_name" content="OLX Clone">
   <meta property="og:locale" content="id_ID">
-  <meta property="product:price:amount" content="185000000">
+  <meta property="product:price:amount" content="<?= (float) $ad['price'] ?>">
   <meta property="product:price:currency" content="IDR">
-  <meta property="product:availability" content="in stock">
-  <meta property="product:condition" content="used">
-
-  <!-- ==================== TWITTER CARD ==================== -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat — OLX Clone">
-  <meta name="twitter:description" content="Rp 185.000.000 - Jakarta Selatan. Kondisi istimewa, tangan pertama, pajak panjang.">
-  <meta name="twitter:image" content="https://olxclone.local/assets/images/sample-avanza.jpg">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
 
-  <!-- ==================== JSON-LD STRUCTURED DATA (Product + BreadcrumbList) ==================== -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Beranda",
-          "item": "https://olxclone.local/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Mobil",
-          "item": "https://olxclone.local/kategori.php?c=mobil"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat",
-          "item": "https://olxclone.local/detail.php?id=1"
-        }
-      ]
-    }
-  </script>
-
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": "Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat",
-      "image": [
-        "https://olxclone.local/assets/images/sample-avanza.jpg"
-      ],
-      "description": "Toyota Avanza 1.3 G MT 2020 warna putih mutiara. Pemakaian pribadi tangan pertama dari baru, service record bengkel resmi Toyota. Pajak panjang sampai Oktober 2026.",
-      "sku": "AD-00001",
-      "category": "Mobil",
-      "offers": {
-        "@type": "Offer",
-        "url": "https://olxclone.local/detail.php?id=1",
-        "priceCurrency": "IDR",
-        "price": "185000000",
-        "priceValidUntil": "2026-12-31",
-        "itemCondition": "https://schema.org/UsedCondition",
-        "availability": "https://schema.org/InStock",
-        "seller": {
-          "@type": "Person",
-          "name": "Rizky Pratama"
-        }
-      }
-    }
-  </script>
+  <!-- ==================== FONT AWESOME ICONS ==================== -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- ==================== CSS EXTERNAL ==================== -->
   <link rel="stylesheet" href="assets/css/style.css">
@@ -120,14 +109,14 @@ require_once __DIR__ . '/koneksi.php';
 
         <!-- Lokasi Selector -->
         <button class="location-selector" aria-label="Pilih lokasi" type="button">
-          📍 <span>Jakarta Selatan</span> ▾
+          <i class="fa-solid fa-location-dot"></i> <span><?= htmlspecialchars($ad['location'] ?? 'Indonesia') ?></span> <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
         </button>
 
         <!-- Search Bar -->
         <form class="search-form" action="search.php" method="GET" role="search" aria-label="Cari iklan">
           <label for="search-input" class="sr-only">Cari di OLX Clone</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, laptop, dan lainnya..." autocomplete="off">
-          <button type="submit" aria-label="Cari">🔍</button>
+          <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
 
         <!-- Auth Actions — Dinamis dari Status Login users -->
@@ -137,23 +126,27 @@ require_once __DIR__ . '/koneksi.php';
               <button type="button" class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
                 <span class="user-avatar-sm"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></span>
                 <span class="user-menu-name"><?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></span>
-                <span aria-hidden="true">▾</span>
+                <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
               </button>
               <div class="user-dropdown" role="menu">
                 <div style="padding: 10px 16px; border-bottom: 1px solid var(--gray-200);">
                   <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></strong>
                   <small style="color: var(--text-muted); font-size: 0.75rem;"><?= htmlspecialchars($_SESSION['user_email'], ENT_QUOTES, 'UTF-8') ?></small>
                 </div>
-                <a href="pasang-iklan.php" class="dropdown-item" role="menuitem">📦 Iklan Saya</a>
+                <a href="pasang-iklan.php" class="dropdown-item" role="menuitem">
+                  <i class="fa-solid fa-box-open"></i> Iklan Saya
+                </a>
                 <div class="dropdown-divider"></div>
-                <a href="logout.php" class="dropdown-item danger-item" role="menuitem">🚪 Keluar (Logout)</a>
+                <a href="logout.php" class="dropdown-item danger-item" role="menuitem">
+                  <i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)
+                </a>
               </div>
             </div>
           <?php else: ?>
             <a href="login.php" class="btn btn-outline">Masuk</a>
           <?php endif; ?>
           <a href="pasang-iklan.php" class="btn btn-primary">
-            ＋ Jual
+            <i class="fa-solid fa-plus"></i> Jual
           </a>
         </div>
 
@@ -164,21 +157,18 @@ require_once __DIR__ . '/koneksi.php';
 
   <!-- ================================================================
        NAVIGASI KATEGORI (Konsisten dengan index.php)
-       Tabel: categories (id, name, icon)
        ================================================================ -->
   <nav class="category-nav" aria-label="Navigasi kategori">
     <div class="container">
       <ul class="category-nav-list">
-        <li><a href="kategori.php?c=mobil" aria-current="page"><span class="cat-icon">🚗</span> Mobil</a></li>
-        <li><a href="kategori.php?c=motor"><span class="cat-icon">🏍️</span> Motor</a></li>
-        <li><a href="kategori.php?c=properti"><span class="cat-icon">🏠</span> Properti</a></li>
-        <li><a href="kategori.php?c=elektronik"><span class="cat-icon">📱</span> Elektronik</a></li>
-        <li><a href="kategori.php?c=perabotan"><span class="cat-icon">🛋️</span> Perabotan</a></li>
-        <li><a href="kategori.php?c=fashion"><span class="cat-icon">👕</span> Fashion</a></li>
-        <li><a href="kategori.php?c=hobi-olahraga"><span class="cat-icon">⚽</span> Hobi & Olahraga</a></li>
-        <li><a href="kategori.php?c=jasa"><span class="cat-icon">🔧</span> Jasa</a></li>
-        <li><a href="kategori.php?c=lowongan"><span class="cat-icon">💼</span> Lowongan Kerja</a></li>
-        <li><a href="kategori.php?c=lainnya"><span class="cat-icon">📦</span> Lainnya</a></li>
+        <?php foreach ($categories as $cat): ?>
+          <li>
+            <a href="kategori.php?c=<?= (int) $cat['id'] ?>">
+              <span class="cat-icon"><i class="<?= htmlspecialchars($cat['icon']) ?>"></i></span>
+              <?= htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?>
+            </a>
+          </li>
+        <?php endforeach; ?>
       </ul>
     </div>
   </nav>
@@ -191,20 +181,31 @@ require_once __DIR__ . '/koneksi.php';
     <nav class="breadcrumb-nav" aria-label="Breadcrumb">
       <ol class="breadcrumb">
         <li><a href="index.php">Beranda</a></li>
-        <li><a href="kategori.php?c=mobil">Mobil</a></li>
-        <li aria-current="page">Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat</li>
+        <li><a href="kategori.php?c=<?= (int) ($ad['category_id'] ?? 1) ?>"><?= htmlspecialchars($ad['category_name'] ?? 'Kategori') ?></a></li>
+        <li aria-current="page"><?= htmlspecialchars($ad['title']) ?></li>
       </ol>
     </nav>
   </div>
 
 
   <!-- ================================================================
+       NOTIFIKASI FLASH SUKSES
+       ================================================================ -->
+  <?php if (!empty($flashSuccess)): ?>
+    <div class="container" style="padding-top: 10px;">
+      <div class="alert alert-success" role="alert">
+        <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
+        <div class="alert-content">
+          <?= htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8') ?>
+        </div>
+        <button type="button" class="alert-close" aria-label="Tutup notifikasi">&times;</button>
+      </div>
+    </div>
+  <?php endif; ?>
+
+
+  <!-- ================================================================
        KONTEN UTAMA DETAIL IKLAN (2 Kolom: Kiri Konten, Kanan Sidebar)
-       Tabel terkait:
-         - ads (id, user_id, category_id, title, description, price, location, created_at)
-         - ad_images (id, ad_id, image_path)
-         - users (id, name, created_at)
-         - categories (id, name, icon)
        ================================================================ -->
   <main id="main-content" class="container" role="main">
     <div class="detail-layout">
@@ -217,34 +218,42 @@ require_once __DIR__ . '/koneksi.php';
 
           <!-- Foto Utama -->
           <figure class="gallery-main">
-            <div class="gallery-placeholder" aria-hidden="true">
-              🚗
-              <span>Tampak Depan Kendaraan</span>
-            </div>
-            <!-- Catatan: Pada implementasi PHP dinamis nanti, ganti dengan:
-                 <img src="<?php echo htmlspecialchars($main_image['image_path']) ?>" alt="<?php echo htmlspecialchars($ad['title']) ?>" id="main-gallery-img"> -->
-            <span class="ad-card-badge">Unggulan</span>
-            <span class="gallery-counter" aria-label="Jumlah foto">📸 1 / 5</span>
+            <?php if (!empty($adImages) && file_exists(__DIR__ . '/' . $adImages[0]['image_path'])): ?>
+              <img src="<?= htmlspecialchars($adImages[0]['image_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8') ?>" id="main-gallery-img" style="width: 100%; max-height: 480px; object-fit: contain; background: #000;">
+            <?php else: ?>
+              <div class="gallery-placeholder" aria-hidden="true">
+                <i class="<?= !empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open' ?>" style="font-size: 5rem; color: var(--primary);"></i>
+                <span>Foto Tampilan Produk</span>
+              </div>
+            <?php endif; ?>
+            <span class="ad-card-badge">Aktif</span>
+            <span class="gallery-counter" aria-label="Jumlah foto">
+              <i class="fa-solid fa-camera"></i> 1 / <?= max(1, count($adImages)) ?>
+            </span>
           </figure>
 
           <!-- Thumbnail Strip (ad_images table) -->
-          <ul class="gallery-thumbs" role="tablist" aria-label="Thumbnail foto iklan">
-            <li class="gallery-thumb-item active" role="tab" aria-selected="true" tabindex="0" title="Foto 1: Tampak Depan">
-              🚗
-            </li>
-            <li class="gallery-thumb-item" role="tab" aria-selected="false" tabindex="-1" title="Foto 2: Tampak Samping">
-              🚙
-            </li>
-            <li class="gallery-thumb-item" role="tab" aria-selected="false" tabindex="-1" title="Foto 3: Interior & Dashboard">
-              💺
-            </li>
-            <li class="gallery-thumb-item" role="tab" aria-selected="false" tabindex="-1" title="Foto 4: Bagasi Belakang">
-              🧳
-            </li>
-            <li class="gallery-thumb-item" role="tab" aria-selected="false" tabindex="-1" title="Foto 5: Ruang Mesin">
-              ⚙️
-            </li>
-          </ul>
+          <?php if (!empty($adImages)): ?>
+            <ul class="gallery-thumbs" role="tablist" aria-label="Thumbnail foto iklan">
+              <?php foreach ($adImages as $idx => $img): ?>
+                <li class="gallery-thumb-item <?= $idx === 0 ? 'active' : '' ?>" role="tab" aria-selected="<?= $idx === 0 ? 'true' : 'false' ?>" tabindex="0" title="Foto <?= $idx + 1 ?>">
+                  <img src="<?= htmlspecialchars($img['image_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Thumbnail <?= $idx + 1 ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                </li>
+              <?php endforeach; ?>
+            </ul>
+          <?php else: ?>
+            <ul class="gallery-thumbs" role="tablist" aria-label="Thumbnail foto iklan">
+              <li class="gallery-thumb-item active" role="tab" aria-selected="true" tabindex="0" title="Foto 1: Utama">
+                <i class="<?= !empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open' ?>"></i>
+              </li>
+              <li class="gallery-thumb-item" role="tab" aria-selected="false" tabindex="-1" title="Foto 2: Tambahan">
+                <i class="fa-solid fa-image"></i>
+              </li>
+              <li class="gallery-thumb-item" role="tab" aria-selected="false" tabindex="-1" title="Foto 3: Tambahan">
+                <i class="fa-solid fa-image"></i>
+              </li>
+            </ul>
+          <?php endif; ?>
 
         </section>
 
@@ -252,19 +261,19 @@ require_once __DIR__ . '/koneksi.php';
         <!-- ===== 2. TOOLBAR DETAIL (Bagikan, Laporkan, Wishlist) ===== -->
         <div class="detail-toolbar">
           <div class="detail-toolbar-left">
-            <span>ID Iklan: <strong>#10842</strong></span>
+            <span>ID Iklan: <strong>#<?= str_pad((string)$ad['id'], 5, '0', STR_PAD_LEFT) ?></strong></span>
             <span>•</span>
-            <time datetime="2026-09-20">Diposting: 20 September 2026</time>
+            <time datetime="<?= substr($ad['created_at'], 0, 10) ?>">Diposting: <?= date('d F Y', strtotime($ad['created_at'])) ?></time>
           </div>
           <div class="detail-toolbar-right">
             <button type="button" class="btn-icon-action" aria-label="Bagikan iklan ini">
-              🔗 Bagikan
+              <i class="fa-solid fa-share-nodes"></i> Bagikan
             </button>
             <button type="button" class="btn-icon-action" aria-label="Simpan ke favorit">
-              ♡ Favorit
+              <i class="fa-regular fa-heart"></i> Favorit
             </button>
             <button type="button" class="btn-icon-action" aria-label="Laporkan iklan ini">
-              🚩 Laporkan
+              <i class="fa-regular fa-flag"></i> Laporkan
             </button>
           </div>
         </div>
@@ -277,43 +286,27 @@ require_once __DIR__ . '/koneksi.php';
           <dl class="specs-grid">
             <div class="spec-item">
               <dt>Kategori</dt>
-              <dd><a href="kategori.php?c=mobil">Mobil Bekas</a></dd>
+              <dd><a href="kategori.php?c=<?= (int) ($ad['category_id'] ?? 1) ?>"><?= htmlspecialchars($ad['category_name'] ?? 'Umum') ?></a></dd>
             </div>
             <div class="spec-item">
-              <dt>Merek</dt>
-              <dd>Toyota</dd>
+              <dt>Harga</dt>
+              <dd><?= $priceFormatted ?></dd>
             </div>
             <div class="spec-item">
-              <dt>Model</dt>
-              <dd>Avanza 1.3 G</dd>
+              <dt>Lokasi</dt>
+              <dd><?= htmlspecialchars($ad['location'] ?? 'Indonesia') ?></dd>
             </div>
             <div class="spec-item">
-              <dt>Tahun Pembuatan</dt>
-              <dd>2020</dd>
+              <dt>Status Listing</dt>
+              <dd>Tersedia / Aktif</dd>
             </div>
             <div class="spec-item">
-              <dt>Transmisi</dt>
-              <dd>Manual (MT)</dd>
+              <dt>Penjual</dt>
+              <dd><?= htmlspecialchars($ad['seller_name'] ?? 'Penjual Terpercaya') ?></dd>
             </div>
             <div class="spec-item">
-              <dt>Jarak Tempuh (KM)</dt>
-              <dd>38.500 km</dd>
-            </div>
-            <div class="spec-item">
-              <dt>Tipe Bahan Bakar</dt>
-              <dd>Bensin</dd>
-            </div>
-            <div class="spec-item">
-              <dt>Warna Kendaraan</dt>
-              <dd>Putih Mutiara</dd>
-            </div>
-            <div class="spec-item">
-              <dt>Kondisi</dt>
-              <dd>Bekas (Mulus & Terawat)</dd>
-            </div>
-            <div class="spec-item">
-              <dt>Pajak STNK</dt>
-              <dd>Hidup (s/d Oktober 2026)</dd>
+              <dt>Tanggal Pasang</dt>
+              <dd><?= date('d M Y', strtotime($ad['created_at'])) ?></dd>
             </div>
           </dl>
         </section>
@@ -324,32 +317,7 @@ require_once __DIR__ . '/koneksi.php';
           <h2 id="heading-desc" class="detail-box-title">Deskripsi Lengkap</h2>
 
           <div class="description-body">
-            <p>
-              Dijual cepat mobil keluarga idaman: <strong>Toyota Avanza 1.3 G Manual tahun 2020 warna Putih Mutiara</strong>.
-              Pemakaian pribadi tangan pertama dari baru, atas nama sendiri, bukan bekas taksi online atau operasional kantor.
-            </p>
-
-            <p><strong>Kondisi Kendaraan:</strong></p>
-            <ul>
-              <li>Odometer asli 38.500 km (slow moving), service record lengkap berkala di bengkel resmi Toyota Astra Motor.</li>
-              <li>Mesin halus, kering, no rembes, tarikan enteng, dan bensin sangat irit.</li>
-              <li>AC double blower sangat dingin dan berfungsi normal.</li>
-              <li>Kaki-kaki senyap tanpa bunyi, ban 4 buah masih tebal 85% (Bridgestone) + ban serep belum pernah turun.</li>
-              <li>Interior original fabric bersih, wangi, tidak merokok. Headunit touchscreen support Bluetooth & USB.</li>
-              <li>Bodi mulus 95%, cat original pabrik, bebas tabrakan besar dan bebas banjir (bisa dicek montir kepercayaan atau inspeksi Otospector).</li>
-            </ul>
-
-            <p><strong>Kelengkapan Dokumen & Legalitas:</strong></p>
-            <ul>
-              <li>STNK, BPKB, dan Faktur Pembelian asli lengkap di tangan.</li>
-              <li>Buku manual, buku servis, dan kunci kontak serep lengkap.</li>
-              <li>Pajak hidup panjang sampai Oktober 2026, plat B Jakarta Selatan (Ganjil).</li>
-            </ul>
-
-            <p>
-              Harga nego santai dan sopan setelah cek unit di lokasi. Siap antar untuk test drive di sekitar Cilandak/TB Simatupang, Jakarta Selatan.
-              Silakan hubungi via WhatsApp atau Chat OLX langsung!
-            </p>
+            <?= nl2br(htmlspecialchars($ad['description'])) ?>
           </div>
         </section>
 
@@ -360,11 +328,11 @@ require_once __DIR__ . '/koneksi.php';
 
           <div class="location-box">
             <p class="location-info">
-              📍 <span>Cilandak, Jakarta Selatan, DKI Jakarta</span>
+              <i class="fa-solid fa-location-dot"></i> <span><?= htmlspecialchars($ad['location'] ?? 'Indonesia') ?></span>
             </p>
             <div class="map-placeholder" aria-label="Peta lokasi perkiraan">
-              <span>🗺️</span>
-              <p>Area Perkiraan: Sekitar Cilandak Barat / TB Simatupang</p>
+              <i class="fa-solid fa-map-location-dot" style="font-size: 2.5rem; color: var(--primary);"></i>
+              <p>Area Perkiraan: <?= htmlspecialchars($ad['location'] ?? 'Indonesia') ?></p>
               <small>(Lokasi presisi akan diberikan penjual saat janjian COD)</small>
             </div>
           </div>
@@ -376,13 +344,13 @@ require_once __DIR__ . '/koneksi.php';
       <!-- ==================== KOLOM KANAN (SIDEBAR STICKY) ==================== -->
       <aside class="detail-sidebar" aria-label="Ringkasan Iklan dan Kontak Penjual">
 
-        <!-- Card 1: Harga & Judul (ads.price, ads.title) -->
+        <!-- Card 1: Harga & Judul -->
         <div class="sidebar-card sidebar-price-card">
-          <p class="price-amount">Rp 185.000.000</p>
-          <h1 class="ad-title">Toyota Avanza 1.3 G MT 2020 Putih Mulus Terawat</h1>
+          <p class="price-amount"><?= $priceFormatted ?></p>
+          <h1 class="ad-title"><?= htmlspecialchars($ad['title']) ?></h1>
           <div class="ad-meta-info">
-            <span>📍 Jakarta Selatan</span>
-            <time datetime="2026-09-20">20 Sep 2026</time>
+            <span><i class="fa-solid fa-location-dot"></i> <?= htmlspecialchars($ad['location'] ?? 'Indonesia') ?></span>
+            <time datetime="<?= substr($ad['created_at'], 0, 10) ?>"><?= date('d M Y', strtotime($ad['created_at'])) ?></time>
           </div>
         </div>
 
@@ -390,39 +358,41 @@ require_once __DIR__ . '/koneksi.php';
         <div class="sidebar-card seller-card">
           <div class="seller-profile">
             <div class="seller-avatar" aria-hidden="true">
-              R
+              <?= strtoupper(substr($ad['seller_name'] ?? 'P', 0, 1)) ?>
             </div>
             <div class="seller-info">
               <h3 class="seller-name">
-                Rizky Pratama
-                <span class="badge badge-verified" title="Identitas terverifikasi">✓ Terverifikasi</span>
+                <?= htmlspecialchars($ad['seller_name'] ?? 'Penjual Terpercaya') ?>
+                <span class="badge badge-verified" title="Identitas terverifikasi">
+                  <i class="fa-solid fa-circle-check"></i> Terverifikasi
+                </span>
               </h3>
-              <p class="seller-member-since">Member sejak Januari 2024</p>
+              <p class="seller-member-since">Member sejak <?= !empty($ad['seller_joined']) ? date('M Y', strtotime($ad['seller_joined'])) : '2024' ?></p>
             </div>
           </div>
 
           <!-- Aksi Kontak -->
           <div class="seller-actions">
             <a href="#chat" class="btn btn-solid-primary btn-block">
-              💬 Chat Penjual
+              <i class="fa-solid fa-comments"></i> Chat Penjual
             </a>
-            <a href="https://wa.me/6281234567890?text=Halo%20Rizky,%20saya%20tertarik%20dengan%20Toyota%20Avanza%202020%20di%20OLX%20Clone" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-block">
-              📱 Hubungi via WhatsApp
+            <a href="https://wa.me/6281234567890?text=Halo%20<?= urlencode($ad['seller_name'] ?? 'Penjual') ?>,%20saya%20tertarik%20dengan%20iklan%20<?= urlencode($ad['title']) ?>%20di%20OLX%20Clone" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-block">
+              <i class="fa-brands fa-whatsapp"></i> Hubungi via WhatsApp
             </a>
-            <button type="button" class="btn btn-outline btn-block" onclick="this.innerHTML='📞 0812-3456-7890'">
-              📞 Tampilkan Telepon
+            <button type="button" class="btn btn-outline btn-block" onclick="this.innerHTML='<i class=\'fa-solid fa-phone\'></i> 0812-3456-7890'">
+              <i class="fa-solid fa-phone"></i> Tampilkan Telepon
             </button>
           </div>
 
-          <a href="profil.php?id=1" class="seller-profile-link">
+          <a href="index.php" class="seller-profile-link">
             Lihat semua iklan penjual ini →
           </a>
         </div>
 
-        <!-- Card 3: Tips Keamanan Bertransaksi (Fitur Khas OLX) -->
+        <!-- Card 3: Tips Keamanan Bertransaksi -->
         <div class="sidebar-card safety-card">
           <div class="safety-header">
-            <span>🛡️</span>
+            <i class="fa-solid fa-shield-halved" style="color: var(--primary); font-size: 1.2rem;"></i>
             <h3>Tips Transaksi Aman</h3>
           </div>
           <ul class="safety-list">
@@ -440,28 +410,27 @@ require_once __DIR__ . '/koneksi.php';
 
     <!-- ================================================================
          IKLAN TERKAIT (RELATED ADS)
-         Tabel terkait: ads + ad_images + categories
          ================================================================ -->
     <section class="section" aria-labelledby="heading-related">
       <div class="section-header">
         <h2 id="heading-related">Iklan Terkait Lainnya</h2>
-        <a href="kategori.php?c=mobil">Lihat Mobil Lainnya →</a>
+        <a href="kategori.php?c=<?= (int) ($ad['category_id'] ?? 1) ?>">Lihat Lainnya →</a>
       </div>
 
       <div class="ad-grid">
 
         <!-- Card 1 -->
         <article class="ad-card">
-          <a href="detail.php?id=5" aria-label="Honda Brio Satya E 2021 - Rp 142.000.000">
+          <a href="detail.php?id=1" aria-label="Honda Brio Satya - Rp 142.000.000">
             <div class="ad-card-image">
-              <div class="img-placeholder" aria-hidden="true">🚗</div>
-              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">♡</button>
+              <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-car"></i></div>
+              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
             </div>
             <div class="ad-card-body">
               <p class="ad-card-price">Rp 142.000.000</p>
               <h3 class="ad-card-title">Honda Brio Satya E CVT 2021 Abu-abu Metalik KM Rendah</h3>
               <div class="ad-card-meta">
-                <span class="ad-card-location">📍 Jakarta Barat</span>
+                <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Jakarta Barat</span>
                 <time datetime="2026-09-18">18 Sep</time>
               </div>
             </div>
@@ -470,17 +439,17 @@ require_once __DIR__ . '/koneksi.php';
 
         <!-- Card 2 -->
         <article class="ad-card">
-          <a href="detail.php?id=13" aria-label="Mitsubishi Xpander Ultimate 2020 - Rp 215.000.000">
+          <a href="detail.php?id=2" aria-label="Mitsubishi Xpander Ultimate - Rp 215.000.000">
             <div class="ad-card-image">
-              <div class="img-placeholder" aria-hidden="true">🚙</div>
+              <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-car-side"></i></div>
               <span class="ad-card-badge">Baru</span>
-              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">♡</button>
+              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
             </div>
             <div class="ad-card-body">
               <p class="ad-card-price">Rp 215.000.000</p>
               <h3 class="ad-card-title">Mitsubishi Xpander Ultimate AT 2020 Hitam Full Original</h3>
               <div class="ad-card-meta">
-                <span class="ad-card-location">📍 Tangerang</span>
+                <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Tangerang</span>
                 <time datetime="2026-09-17">17 Sep</time>
               </div>
             </div>
@@ -489,16 +458,16 @@ require_once __DIR__ . '/koneksi.php';
 
         <!-- Card 3 -->
         <article class="ad-card">
-          <a href="detail.php?id=14" aria-label="Daihatsu Sigra 1.2 R Deluxe 2022 - Rp 128.000.000">
+          <a href="detail.php?id=3" aria-label="Daihatsu Sigra 1.2 R - Rp 128.000.000">
             <div class="ad-card-image">
-              <div class="img-placeholder" aria-hidden="true">🚗</div>
-              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">♡</button>
+              <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-car"></i></div>
+              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
             </div>
             <div class="ad-card-body">
               <p class="ad-card-price">Rp 128.000.000</p>
               <h3 class="ad-card-title">Daihatsu Sigra 1.2 R Deluxe MT 2022 Silver Siap Pakai</h3>
               <div class="ad-card-meta">
-                <span class="ad-card-location">📍 Depok</span>
+                <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Depok</span>
                 <time datetime="2026-09-16">16 Sep</time>
               </div>
             </div>
@@ -507,16 +476,16 @@ require_once __DIR__ . '/koneksi.php';
 
         <!-- Card 4 -->
         <article class="ad-card">
-          <a href="detail.php?id=15" aria-label="Suzuki Ertiga GL AT 2019 - Rp 165.000.000">
+          <a href="detail.php?id=4" aria-label="Suzuki Ertiga GL - Rp 165.000.000">
             <div class="ad-card-image">
-              <div class="img-placeholder" aria-hidden="true">🚙</div>
-              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">♡</button>
+              <div class="img-placeholder" aria-hidden="true"><i class="fa-solid fa-car-side"></i></div>
+              <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button"><i class="fa-regular fa-heart"></i></button>
             </div>
             <div class="ad-card-body">
               <p class="ad-card-price">Rp 165.000.000</p>
               <h3 class="ad-card-title">Suzuki Ertiga GL Automatic 2019 Merah Maroon Antik</h3>
               <div class="ad-card-meta">
-                <span class="ad-card-location">📍 Bekasi</span>
+                <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> Bekasi</span>
                 <time datetime="2026-09-15">15 Sep</time>
               </div>
             </div>
@@ -552,10 +521,10 @@ require_once __DIR__ . '/koneksi.php';
         <div class="footer-col">
           <h3>Kategori Populer</h3>
           <ul>
-            <li><a href="kategori.php?c=mobil">Mobil Bekas</a></li>
-            <li><a href="kategori.php?c=motor">Motor Bekas</a></li>
-            <li><a href="kategori.php?c=properti">Rumah & Apartemen</a></li>
-            <li><a href="kategori.php?c=elektronik">HP & Laptop</a></li>
+            <li><a href="kategori.php?c=1">Mobil Bekas</a></li>
+            <li><a href="kategori.php?c=2">Motor Bekas</a></li>
+            <li><a href="kategori.php?c=3">Rumah & Apartemen</a></li>
+            <li><a href="kategori.php?c=4">HP & Laptop</a></li>
           </ul>
         </div>
 
@@ -574,10 +543,10 @@ require_once __DIR__ . '/koneksi.php';
         <div class="footer-col">
           <h3>Ikuti Kami</h3>
           <div class="footer-social">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">📘</a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">📸</a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter/X">🐦</a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶️</a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter/X"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
           </div>
         </div>
 
@@ -601,4 +570,3 @@ require_once __DIR__ . '/koneksi.php';
 </body>
 
 </html>
-

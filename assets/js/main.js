@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const isPassword = input.type === 'password';
       input.type = isPassword ? 'text' : 'password';
-      this.textContent = isPassword ? '🙈' : '👁️';
+      this.innerHTML = isPassword ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
       this.setAttribute('aria-label', isPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
     });
   });
@@ -62,10 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
       indicator.style.display = 'block';
       if (pass === confirm) {
         indicator.className = 'password-indicator match';
-        indicator.textContent = '✓ Kata sandi cocok';
+        indicator.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kata sandi cocok';
       } else {
         indicator.className = 'password-indicator mismatch';
-        indicator.textContent = '✕ Kata sandi tidak cocok';
+        indicator.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Kata sandi tidak cocok';
       }
     }
 
@@ -151,9 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
         this.classList.add('active');
         this.setAttribute('aria-selected', 'true');
 
-        // Update counter teks (misal: 📸 2 / 5)
+        // Update counter teks (misal: 1 / 5)
         if (galleryCounter) {
-          galleryCounter.textContent = `📸 ${index + 1} / ${galleryThumbs.length}`;
+          galleryCounter.innerHTML = `<i class="fa-solid fa-camera"></i> ${index + 1} / ${galleryThumbs.length}`;
         }
 
         // Jika ada tag <img> di dalam thumbnail, ganti src gambar utama
@@ -168,9 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
             mainImg.style.opacity = '1';
           }, 150);
         } else if (mainPlaceholder) {
-          // Jika masih emoji/placeholder
-          const emoji = this.textContent.trim();
-          mainPlaceholder.innerHTML = `<span style="font-size: 5rem;">${emoji}</span><span>Foto Tampilan ${index + 1}</span>`;
+          const iconEl = this.querySelector('i');
+          const iconClass = iconEl ? iconEl.className : 'fa-solid fa-image';
+          mainPlaceholder.innerHTML = `<i class="${iconClass}" style="font-size: 5rem; color: var(--primary);"></i><span>Foto Tampilan ${index + 1}</span>`;
         }
       });
     });
