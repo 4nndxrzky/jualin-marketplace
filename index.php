@@ -1,16 +1,16 @@
 <?php
-session_start();
-require_once __DIR__ . '/koneksi.php';
+    session_start();
+    require_once __DIR__ . '/koneksi.php';
 
-$flashSuccess = $_SESSION['flash_success'] ?? null;
-unset($_SESSION['flash_success']);
+    $flashSuccess = $_SESSION['flash_success'] ?? null;
+    unset($_SESSION['flash_success']);
 
-// Ambil kategori secara dinamis dari tabel categories
-$stmtCat = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
-$categories = $stmtCat->fetchAll();
+    // Ambil kategori secara dinamis dari tabel categories
+    $stmtCat    = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+    $categories = $stmtCat->fetchAll();
 
-// Ambil iklan terbaru dari database
-$stmtAds = $pdo->query("
+    // Ambil iklan terbaru dari database
+    $stmtAds = $pdo->query("
     SELECT a.*, c.name AS category_name, c.icon AS category_icon,
            (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
     FROM ads a
@@ -18,7 +18,7 @@ $stmtAds = $pdo->query("
     ORDER BY a.created_at DESC
     LIMIT 8
 ");
-$latestAds = $stmtAds->fetchAll();
+    $latestAds = $stmtAds->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -129,14 +129,14 @@ $latestAds = $stmtAds->fetchAll();
           <?php if (isset($_SESSION['user_id'])): ?>
             <div class="user-menu-wrapper">
               <button type="button" class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
-                <span class="user-avatar-sm"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></span>
-                <span class="user-menu-name"><?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="user-avatar-sm"><?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></span>
+                <span class="user-menu-name"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></span>
                 <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
               </button>
               <div class="user-dropdown" role="menu">
                 <div style="padding: 10px 16px; border-bottom: 1px solid var(--gray-200);">
-                  <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></strong>
-                  <small style="color: var(--text-muted); font-size: 0.75rem;"><?= htmlspecialchars($_SESSION['user_email'], ENT_QUOTES, 'UTF-8') ?></small>
+                  <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></strong>
+                  <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($_SESSION['user_email'], ENT_QUOTES, 'UTF-8') ?></small>
                 </div>
                 <a href="pasang-iklan.php" class="dropdown-item" role="menuitem">
                   <i class="fa-solid fa-box-open"></i> Iklan Saya
@@ -168,9 +168,9 @@ $latestAds = $stmtAds->fetchAll();
       <ul class="category-nav-list">
         <?php foreach ($categories as $cat): ?>
           <li>
-            <a href="kategori.php?c=<?= (int) $cat['id'] ?>">
-              <span class="cat-icon"><i class="<?= htmlspecialchars($cat['icon']) ?>"></i></span>
-              <?= htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?>
+            <a href="kategori.php?c=<?php echo (int) $cat['id'] ?>">
+              <span class="cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']) ?>"></i></span>
+              <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?>
             </a>
           </li>
         <?php endforeach; ?>
@@ -184,12 +184,12 @@ $latestAds = $stmtAds->fetchAll();
        ================================================================ -->
   <main id="main-content" role="main">
 
-    <?php if (!empty($flashSuccess)): ?>
+    <?php if (! empty($flashSuccess)): ?>
       <div class="container" style="padding-top: 16px;">
         <div class="alert alert-success" role="alert">
           <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
           <div class="alert-content">
-            <?= htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8') ?>
+            <?php echo htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8') ?>
           </div>
           <button type="button" class="alert-close" aria-label="Tutup notifikasi">&times;</button>
         </div>
@@ -217,9 +217,9 @@ $latestAds = $stmtAds->fetchAll();
 
         <div class="category-grid">
           <?php foreach ($categories as $cat): ?>
-            <a href="kategori.php?c=<?= (int) $cat['id'] ?>" class="category-card">
-              <span class="cat-icon" aria-hidden="true"><i class="<?= htmlspecialchars($cat['icon']) ?>"></i></span>
-              <span class="cat-name"><?= htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?></span>
+            <a href="kategori.php?c=<?php echo (int) $cat['id'] ?>" class="category-card">
+              <span class="cat-icon" aria-hidden="true"><i class="<?php echo htmlspecialchars($cat['icon']) ?>"></i></span>
+              <span class="cat-name"><?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?></span>
             </a>
           <?php endforeach; ?>
         </div>
@@ -240,17 +240,17 @@ $latestAds = $stmtAds->fetchAll();
 
         <div class="ad-grid">
 
-          <?php if (!empty($latestAds)): ?>
+          <?php if (! empty($latestAds)): ?>
             <!-- Menampilkan iklan nyata dari database -->
             <?php foreach ($latestAds as $ad): ?>
               <article class="ad-card">
-                <a href="detail.php?id=<?= (int) $ad['id'] ?>" aria-label="<?= htmlspecialchars($ad['title']) ?> - Rp <?= number_format($ad['price'], 0, ',', '.') ?>">
+                <a href="detail.php?id=<?php echo (int) $ad['id'] ?>" aria-label="<?php echo htmlspecialchars($ad['title']) ?> - Rp <?php echo number_format($ad['price'], 0, ',', '.') ?>">
                   <div class="ad-card-image">
-                    <?php if (!empty($ad['image_path']) && file_exists(__DIR__ . '/' . $ad['image_path'])): ?>
-                      <img src="<?= htmlspecialchars($ad['image_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8') ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <?php if (! empty($ad['image_path']) && file_exists(__DIR__ . '/' . $ad['image_path'])): ?>
+                      <img src="<?php echo htmlspecialchars($ad['image_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8') ?>" style="width: 100%; height: 100%; object-fit: cover;">
                     <?php else: ?>
                       <div class="img-placeholder" aria-hidden="true">
-                        <i class="<?= !empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open' ?>"></i>
+                        <i class="<?php echo ! empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open' ?>"></i>
                       </div>
                     <?php endif; ?>
                     <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">
@@ -258,11 +258,11 @@ $latestAds = $stmtAds->fetchAll();
                     </button>
                   </div>
                   <div class="ad-card-body">
-                    <p class="ad-card-price">Rp <?= number_format($ad['price'], 0, ',', '.') ?></p>
-                    <h3 class="ad-card-title"><?= htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8') ?></h3>
+                    <p class="ad-card-price">Rp <?php echo number_format($ad['price'], 0, ',', '.') ?></p>
+                    <h3 class="ad-card-title"><?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8') ?></h3>
                     <div class="ad-card-meta">
-                      <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> <?= htmlspecialchars($ad['location'], ENT_QUOTES, 'UTF-8') ?></span>
-                      <time datetime="<?= substr($ad['created_at'], 0, 10) ?>"><?= date('d M', strtotime($ad['created_at'])) ?></time>
+                      <span class="ad-card-location"><i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($ad['location'], ENT_QUOTES, 'UTF-8') ?></span>
+                      <time datetime="<?php echo substr($ad['created_at'], 0, 10) ?>"><?php echo date('d M', strtotime($ad['created_at'])) ?></time>
                     </div>
                   </div>
                 </a>

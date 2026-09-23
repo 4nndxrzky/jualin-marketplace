@@ -1,5 +1,5 @@
 <?php
-/**
+    /**
  * ============================================================================
  * HALAMAN REGISTRASI PENGGUNA (REGISTER)
  * Terkoneksi dengan Database: olx_clone
@@ -7,21 +7,21 @@
  * ============================================================================
  */
 
-session_start();
-require_once __DIR__ . '/koneksi.php';
+    session_start();
+    require_once __DIR__ . '/koneksi.php';
 
-// Jika pengguna sudah login, langsung alihkan ke beranda
-if (isset($_SESSION['user_id'])) {
+    // Jika pengguna sudah login, langsung alihkan ke beranda
+    if (isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit;
-}
+    }
 
-$errors = [];
-$name   = '';
-$email  = '';
+    $errors = [];
+    $name   = '';
+    $email  = '';
 
-// Proses Pengiriman Form (POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Proses Pengiriman Form (POST)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name                  = trim($_POST['name'] ?? '');
     $email                 = trim($_POST['email'] ?? '');
     $password              = $_POST['password'] ?? '';
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 2. Validasi Email & Pengecekan Unik di Database
     if (empty($email)) {
         $errors[] = "Alamat email wajib diisi.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    } elseif (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Format alamat email tidak valid.";
     } elseif (mb_strlen($email) > 100) {
         $errors[] = "Alamat email maksimal 100 karakter.";
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 4. Validasi Persetujuan Syarat & Ketentuan
-    if (!$agree_terms) {
+    if (! $agree_terms) {
         $errors[] = "Anda wajib menyetujui Syarat & Ketentuan serta Kebijakan Privasi.";
     }
 
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: login.php");
         exit;
     }
-}
+    }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -201,14 +201,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- NOTIFIKASI ERROR (JIKA ADA) -->
-        <?php if (!empty($errors)): ?>
+        <?php if (! empty($errors)): ?>
           <div class="alert alert-danger" role="alert">
             <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
             <div class="alert-content">
               <strong>Pendaftaran Gagal:</strong>
               <ul style="margin: 6px 0 0 16px; list-style: disc;">
                 <?php foreach ($errors as $err): ?>
-                  <li><?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
+                  <li><?php echo htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
                 <?php endforeach; ?>
               </ul>
             </div>
@@ -233,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 required
                 autocomplete="name"
                 maxlength="100"
-                value="<?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8') ?>"
+                value="<?php echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8') ?>"
                 aria-required="true">
             </div>
             <span class="form-hint">Gunakan nama asli untuk meningkatkan reputasi & kepercayaan pembeli.</span>
@@ -254,7 +254,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 autocomplete="email"
                 inputmode="email"
                 maxlength="100"
-                value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>"
+                value="<?php echo htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>"
                 aria-required="true">
             </div>
             <span class="form-hint">Email aktif untuk verifikasi akun dan pemberitahuan transaksi.</span>

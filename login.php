@@ -1,5 +1,5 @@
 <?php
-/**
+    /**
  * ============================================================================
  * HALAMAN AUTENTIKASI MASUK (LOGIN)
  * Terkoneksi dengan Database: olx_clone
@@ -7,24 +7,24 @@
  * ============================================================================
  */
 
-session_start();
-require_once __DIR__ . '/koneksi.php';
+    session_start();
+    require_once __DIR__ . '/koneksi.php';
 
-// Jika pengguna sudah login, langsung alihkan ke beranda
-if (isset($_SESSION['user_id'])) {
+    // Jika pengguna sudah login, langsung alihkan ke beranda
+    if (isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit;
-}
+    }
 
-// Ambil pesan flash (misal dari registrasi berhasil atau logout)
-$successMessage = $_SESSION['flash_success'] ?? null;
-unset($_SESSION['flash_success']);
+    // Ambil pesan flash (misal dari registrasi berhasil atau logout)
+    $successMessage = $_SESSION['flash_success'] ?? null;
+    unset($_SESSION['flash_success']);
 
-$errors = [];
-$email  = $_COOKIE['olx_remember_email'] ?? '';
+    $errors = [];
+    $email  = $_COOKIE['olx_remember_email'] ?? '';
 
-// Proses Pengiriman Form Login (POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Proses Pengiriman Form Login (POST)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email       = trim($_POST['email'] ?? '');
     $password    = $_POST['password'] ?? '';
     $remember_me = isset($_POST['remember_me']);
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 1. Validasi Input Dasar
     if (empty($email)) {
         $errors[] = "Alamat email wajib diisi.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    } elseif (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Format alamat email tidak valid.";
     }
 
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = "Alamat email atau kata sandi yang Anda masukkan salah.";
         }
     }
-}
+    }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -193,25 +193,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- NOTIFIKASI SUKSES FLASH (MISAL SETELAH REGISTER ATAU LOGOUT) -->
-        <?php if (!empty($successMessage)): ?>
+        <?php if (! empty($successMessage)): ?>
           <div class="alert alert-success" role="alert">
             <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
             <div class="alert-content">
-              <?= htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8') ?>
+              <?php echo htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8') ?>
             </div>
             <button type="button" class="alert-close" aria-label="Tutup notifikasi">&times;</button>
           </div>
         <?php endif; ?>
 
         <!-- NOTIFIKASI ERROR (JIKA ADA) -->
-        <?php if (!empty($errors)): ?>
+        <?php if (! empty($errors)): ?>
           <div class="alert alert-danger" role="alert">
             <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
             <div class="alert-content">
               <strong>Gagal Masuk:</strong>
               <ul style="margin: 6px 0 0 16px; list-style: disc;">
                 <?php foreach ($errors as $err): ?>
-                  <li><?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
+                  <li><?php echo htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
                 <?php endforeach; ?>
               </ul>
             </div>
@@ -236,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 required
                 autocomplete="email"
                 inputmode="email"
-                value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>"
+                value="<?php echo htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>"
                 aria-required="true">
             </div>
           </div>
@@ -270,7 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <!-- Pilihan Tambahan: Ingat Saya -->
           <div class="auth-options">
             <label class="checkbox-label" for="remember_me">
-              <input type="checkbox" id="remember_me" name="remember_me" value="1" <?= !empty($_COOKIE['olx_remember_email']) ? 'checked' : '' ?>>
+              <input type="checkbox" id="remember_me" name="remember_me" value="1" <?php echo ! empty($_COOKIE['olx_remember_email']) ? 'checked' : '' ?>>
               <span>Ingat saya di perangkat ini</span>
             </label>
           </div>

@@ -52,4 +52,3 @@ try {
         "<p>Pesan Error: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . "</p>" .
         "<p><em>Pastikan server MySQL di Laragon/XAMPP sudah aktif dan database '<strong>{$dbname}</strong>' sudah dibuat.</em></p>");
 }
-

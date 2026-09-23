@@ -71,17 +71,54 @@ CREATE TABLE `categories` (
 -- Dumping data for table `categories`
 --
 
-INSERT INTO `categories` (`id`, `name`, `icon`) VALUES
-(1, 'Mobil', 'fa-solid fa-car'),
-(2, 'Motor', 'fa-solid fa-motorcycle'),
-(3, 'Properti', 'fa-solid fa-house'),
-(4, 'Elektronik & Gadget', 'fa-solid fa-mobile-screen-button'),
-(5, 'Perabotan Rumah Tangga', 'fa-solid fa-couch'),
-(6, 'Fashion & Pakaian', 'fa-solid fa-shirt'),
-(7, 'Hobi & Olahraga', 'fa-solid fa-futbol'),
-(8, 'Jasa & Layanan', 'fa-solid fa-wrench'),
-(9, 'Lowongan Kerja', 'fa-solid fa-briefcase'),
-(10, 'Keperluan Lainnya', 'fa-solid fa-box-open');
+INSERT INTO
+    `categories` (`id`, `name`, `icon`)
+VALUES (1, 'Mobil', 'fa-solid fa-car'),
+    (
+        2,
+        'Motor',
+        'fa-solid fa-motorcycle'
+    ),
+    (
+        3,
+        'Properti',
+        'fa-solid fa-house'
+    ),
+    (
+        4,
+        'Elektronik & Gadget',
+        'fa-solid fa-mobile-screen-button'
+    ),
+    (
+        5,
+        'Perabotan Rumah Tangga',
+        'fa-solid fa-couch'
+    ),
+    (
+        6,
+        'Fashion & Pakaian',
+        'fa-solid fa-shirt'
+    ),
+    (
+        7,
+        'Hobi & Olahraga',
+        'fa-solid fa-futbol'
+    ),
+    (
+        8,
+        'Jasa & Layanan',
+        'fa-solid fa-wrench'
+    ),
+    (
+        9,
+        'Lowongan Kerja',
+        'fa-solid fa-briefcase'
+    ),
+    (
+        10,
+        'Keperluan Lainnya',
+        'fa-solid fa-box-open'
+    );
 
 -- --------------------------------------------------------
 
@@ -145,7 +182,8 @@ ALTER TABLE `ad_images` MODIFY `id` int NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `categories`
 --
-ALTER TABLE `categories` MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+ALTER TABLE `categories` MODIFY `id` int NOT NULL AUTO_INCREMENT,
+AUTO_INCREMENT = 11;
 
 --
 -- AUTO_INCREMENT for table `users`

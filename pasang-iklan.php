@@ -1,5 +1,5 @@
 <?php
-/**
+    /**
  * ============================================================================
  * HALAMAN PASANG IKLAN (POST AD) — DINAMIS PDO & MYSQL
  * Terkoneksi dengan Database: olx_clone
@@ -11,36 +11,36 @@
  * ============================================================================
  */
 
-session_start();
-require_once __DIR__ . '/koneksi.php';
+    session_start();
+    require_once __DIR__ . '/koneksi.php';
 
-// Proteksi Autentikasi: Wajib login untuk memasang iklan
-if (!isset($_SESSION['user_id'])) {
+    // Proteksi Autentikasi: Wajib login untuk memasang iklan
+    if (! isset($_SESSION['user_id'])) {
     $_SESSION['flash_success'] = "Silakan masuk ke akun Anda terlebih dahulu untuk memasang iklan.";
     header("Location: login.php");
     exit;
-}
+    }
 
-$currentUser = [
+    $currentUser = [
     'id'    => (int) $_SESSION['user_id'],
     'name'  => $_SESSION['user_name'] ?? 'Pengguna',
-    'email' => $_SESSION['user_email'] ?? ''
-];
+    'email' => $_SESSION['user_email'] ?? '',
+    ];
 
-// Ambil data kategori secara dinamis dari tabel categories
-$stmtCategories = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
-$categories = $stmtCategories->fetchAll();
+    // Ambil data kategori secara dinamis dari tabel categories
+    $stmtCategories = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+    $categories     = $stmtCategories->fetchAll();
 
-$errors        = [];
-$title         = '';
-$category_id   = '';
-$price         = '';
-$location      = '';
-$description   = '';
-$is_negotiable = 1;
+    $errors        = [];
+    $title         = '';
+    $category_id   = '';
+    $price         = '';
+    $location      = '';
+    $description   = '';
+    $is_negotiable = 1;
 
-// Proses Form Submission (POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Proses Form Submission (POST)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title         = trim($_POST['title'] ?? '');
     $category_id   = (int) ($_POST['category_id'] ?? 0);
     $price         = trim($_POST['price'] ?? '');
@@ -62,13 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $catCheck = $pdo->prepare("SELECT id FROM categories WHERE id = ?");
         $catCheck->execute([$category_id]);
-        if (!$catCheck->fetch()) {
+        if (! $catCheck->fetch()) {
             $errors[] = "Kategori yang dipilih tidak terdaftar di sistem.";
         }
     }
 
     // 3. Validasi Harga (ads.price - DECIMAL 15,2)
-    if ($price === '' || !is_numeric($price) || (float) $price < 0) {
+    if ($price === '' || ! is_numeric($price) || (float) $price < 0) {
         $errors[] = "Harga barang wajib diisi dengan nominal angka yang valid (contoh: 185000000).";
     }
 
@@ -85,27 +85,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 6. Validasi Syarat & Ketentuan
-    if (!$agree_rules) {
+    if (! $agree_rules) {
         $errors[] = "Anda wajib menyetujui Syarat & Ketentuan Pasang Iklan.";
     }
 
     // 7. Penanganan Unggah Foto (ad_images)
     $uploadedImages = [];
-    $uploadDir = __DIR__ . '/uploads/ads/';
+    $uploadDir      = __DIR__ . '/uploads/ads/';
 
-    if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
-        if (!is_dir($uploadDir)) {
+    if (isset($_FILES['images']) && ! empty($_FILES['images']['name'][0])) {
+        if (! is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
 
         $allowedMimes = [
-            'image/jpeg' => 'jpg',
+            'image/jpeg'  => 'jpg',
             'image/pjpeg' => 'jpg',
-            'image/png'  => 'png',
-            'image/webp' => 'webp'
+            'image/png'   => 'png',
+            'image/webp'  => 'webp',
         ];
         $maxFileSize = 5 * 1024 * 1024; // 5 MB
-        $totalFiles = count($_FILES['images']['name']);
+        $totalFiles  = count($_FILES['images']['name']);
 
         if ($totalFiles > 5) {
             $errors[] = "Maksimal hanya dapat mengunggah 5 foto barang.";
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fileSize = $_FILES['images']['size'][$i];
             $mimeType = $finfo->file($fileTmp);
 
-            if (!array_key_exists($mimeType, $allowedMimes)) {
+            if (! array_key_exists($mimeType, $allowedMimes)) {
                 $errors[] = "Format foto ke-" . ($i + 1) . " tidak didukung. Harap gunakan format JPG, PNG, atau WebP.";
                 continue;
             }
@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 continue;
             }
 
-            $extension = $allowedMimes[$mimeType];
+            $extension   = $allowedMimes[$mimeType];
             $newFileName = 'ad_' . bin2hex(random_bytes(8)) . '_' . time() . '.' . $extension;
             $destination = $uploadDir . $newFileName;
 
@@ -161,13 +161,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $title,
                 $description,
                 (float) $price,
-                $location
+                $location,
             ]);
 
             $newAdId = (int) $pdo->lastInsertId();
 
             // Simpan referensi foto ke tabel ad_images
-            if (!empty($uploadedImages)) {
+            if (! empty($uploadedImages)) {
                 $imgStmt = $pdo->prepare("INSERT INTO ad_images (ad_id, image_path) VALUES (?, ?)");
                 foreach ($uploadedImages as $imgPath) {
                     $imgStmt->execute([$newAdId, $imgPath]);
@@ -192,7 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = "Terjadi kesalahan internal saat menyimpan iklan ke database: " . $e->getMessage();
         }
     }
-}
+    }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -295,14 +295,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </a>
           <div class="user-menu-wrapper">
             <button type="button" class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
-              <span class="user-avatar-sm"><?= strtoupper(substr($currentUser['name'], 0, 1)) ?></span>
-              <span class="user-menu-name"><?= htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="user-avatar-sm"><?php echo strtoupper(substr($currentUser['name'], 0, 1)) ?></span>
+              <span class="user-menu-name"><?php echo htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></span>
               <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
             </button>
             <div class="user-dropdown" role="menu">
               <div style="padding: 10px 16px; border-bottom: 1px solid var(--gray-200);">
-                <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?= htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></strong>
-                <small style="color: var(--text-muted); font-size: 0.75rem;"><?= htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?></small>
+                <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></strong>
+                <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?></small>
               </div>
               <a href="logout.php" class="dropdown-item danger-item" role="menuitem">
                 <i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)
@@ -345,14 +345,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- NOTIFIKASI ERROR JIKA ADA -->
-        <?php if (!empty($errors)): ?>
+        <?php if (! empty($errors)): ?>
           <div class="alert alert-danger" role="alert" style="margin-bottom: 24px;">
             <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
             <div class="alert-content">
               <strong>Gagal Memasang Iklan:</strong>
               <ul style="margin: 6px 0 0 16px; list-style: disc;">
                 <?php foreach ($errors as $err): ?>
-                  <li><?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
+                  <li><?php echo htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
                 <?php endforeach; ?>
               </ul>
             </div>
@@ -377,10 +377,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="input-wrapper">
                 <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-list"></i></span>
                 <select name="category_id" id="category_id" class="form-control" required aria-required="true">
-                  <option value="" disabled <?= empty($category_id) ? 'selected' : '' ?>>-- Pilih Kategori Barang --</option>
+                  <option value="" disabled <?php echo empty($category_id) ? 'selected' : '' ?>>-- Pilih Kategori Barang --</option>
                   <?php foreach ($categories as $cat): ?>
-                    <option value="<?= (int) $cat['id'] ?>" <?= ((string) $category_id === (string) $cat['id']) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?>
+                    <option value="<?php echo (int) $cat['id'] ?>" <?php echo ((string) $category_id === (string) $cat['id']) ? 'selected' : '' ?>>
+                      <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?>
                     </option>
                   <?php endforeach; ?>
                 </select>
@@ -450,7 +450,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group" style="margin-bottom: 20px;">
               <div class="char-counter-row">
                 <label for="title" class="form-label">Judul Iklan *</label>
-                <span id="title-counter" class="char-count"><?= mb_strlen($title) ?> / 50 karakter</span>
+                <span id="title-counter" class="char-count"><?php echo mb_strlen($title) ?> / 50 karakter</span>
               </div>
               <input
                 type="text"
@@ -461,7 +461,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 placeholder="Contoh: Toyota Avanza 1.3 G MT 2020 Putih Mulus"
                 required
                 maxlength="50"
-                value="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>"
+                value="<?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>"
                 aria-required="true">
               <span class="form-hint">Maksimal 50 karakter. Tulis merek, tipe, atau fitur unggulan barang Anda.</span>
             </div>
@@ -477,7 +477,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 placeholder="Jelaskan kondisi barang secara jujur, kelengkapan aksesori, riwayat servis/pemakaian, alasan dijual, dan informasi penting lainnya..."
                 required
                 rows="6"
-                aria-required="true"><?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?></textarea>
+                aria-required="true"><?php echo htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?></textarea>
               <span class="form-hint">Iklan dengan deskripsi detail mendapatkan respons pembeli 3x lebih banyak.</span>
             </div>
           </section>
@@ -502,7 +502,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   min="0"
                   step="1000"
                   required
-                  value="<?= htmlspecialchars($price, ENT_QUOTES, 'UTF-8') ?>"
+                  value="<?php echo htmlspecialchars($price, ENT_QUOTES, 'UTF-8') ?>"
                   aria-required="true">
               </div>
               <span class="form-hint">Tuliskan nominal angka saja tanpa titik atau koma (contoh: 185000000).</span>
@@ -510,7 +510,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Checkbox Nego -->
             <label class="checkbox-label" for="is_negotiable">
-              <input type="checkbox" id="is_negotiable" name="is_negotiable" value="1" <?= $is_negotiable ? 'checked' : '' ?>>
+              <input type="checkbox" id="is_negotiable" name="is_negotiable" value="1" <?php echo $is_negotiable ? 'checked' : '' ?>>
               <span>Bisa Nego (Buka penawaran harga santai)</span>
             </label>
           </section>
@@ -534,7 +534,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   placeholder="Contoh: Jakarta Selatan, Cilandak"
                   required
                   maxlength="100"
-                  value="<?= htmlspecialchars($location, ENT_QUOTES, 'UTF-8') ?>"
+                  value="<?php echo htmlspecialchars($location, ENT_QUOTES, 'UTF-8') ?>"
                   aria-required="true">
               </div>
               <span class="form-hint">Cantumkan nama kota dan kecamatan agar calon pembeli terdekat mudah menemukan iklan Anda.</span>
@@ -550,11 +550,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div style="display: flex; align-items: center; gap: 14px; background-color: var(--gray-50); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--gray-200);">
               <div class="seller-avatar" style="width: 44px; height: 44px; font-size: 1.1rem;" aria-hidden="true">
-                <?= strtoupper(substr($currentUser['name'], 0, 1)) ?>
+                <?php echo strtoupper(substr($currentUser['name'], 0, 1)) ?>
               </div>
               <div>
-                <p style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><?= htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></p>
-                <p style="font-size: 0.8rem; color: var(--text-muted);"><?= htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?> • Akun Terverifikasi</p>
+                <p style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><?php echo htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);"><?php echo htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?> • Akun Terverifikasi</p>
               </div>
             </div>
             <span class="form-hint" style="margin-top: 8px; display: block;">
