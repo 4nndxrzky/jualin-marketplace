@@ -94,15 +94,15 @@
     // 4. Query Iklan Terkait Dinamis (Related Ads dari Database)
     // --------------------------------------------------------------------------
     $stmtRelated = $pdo->prepare("
-    SELECT a.*, c.name AS category_name, c.icon AS category_icon,
-           (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
-    FROM ads a
-    LEFT JOIN categories c ON a.category_id = c.id
-    WHERE a.id != ?
-    ORDER BY (a.category_id = ?) DESC, a.created_at DESC
-    LIMIT 4
-");
-    $stmtRelated->execute([$ad['id'] ?? 0, $ad['category_id'] ?? 0]);
+        SELECT a.*, c.name AS category_name, c.icon AS category_icon,
+               (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
+        FROM ads a
+        LEFT JOIN categories c ON a.category_id = c.id
+        WHERE a.category_id = ? AND a.id != ?
+        ORDER BY a.created_at DESC
+        LIMIT 4
+    ");
+    $stmtRelated->execute([$ad['category_id'] ?? 0, $ad['id'] ?? 0]);
     $relatedAds = $stmtRelated->fetchAll();
 
     $pageTitle      = htmlspecialchars($ad['title'] ?? 'Detail Iklan', ENT_QUOTES, 'UTF-8') . " — OLX Clone";
@@ -397,12 +397,14 @@
         <!-- Card 2: Profil Penjual (users table + nomor whatsapp) -->
         <div class="sidebar-card seller-card">
           <div class="seller-profile">
-            <div class="seller-avatar" aria-hidden="true">
+            <a href="penjual.php?id=<?php echo (int) ($ad['user_id'] ?? $ad['seller_user_id'] ?? 0); ?>" class="seller-avatar" style="text-decoration: none;" aria-label="Profil Penjual">
               <?php echo strtoupper(substr($ad['seller_name'] ?? 'P', 0, 1)); ?>
-            </div>
+            </a>
             <div class="seller-info">
               <h3 class="seller-name">
-                <?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual Terpercaya', ENT_QUOTES, 'UTF-8'); ?>
+                <a href="penjual.php?id=<?php echo (int) ($ad['user_id'] ?? $ad['seller_user_id'] ?? 0); ?>" style="color: inherit; text-decoration: none;">
+                  <?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual Terpercaya', ENT_QUOTES, 'UTF-8'); ?>
+                </a>
                 <span class="badge badge-verified" title="Identitas terverifikasi">
                   <i class="fa-solid fa-circle-check"></i> Terverifikasi
                 </span>
@@ -421,8 +423,8 @@
             </a>
           </div>
 
-          <a href="index.php?q=<?php echo urlencode($ad['seller_name'] ?? ''); ?>" class="seller-profile-link">
-            Lihat semua iklan penjual ini &rarr;
+          <a href="penjual.php?id=<?php echo (int) ($ad['user_id'] ?? $ad['seller_user_id'] ?? 0); ?>" class="seller-profile-link">
+            Lihat semua iklan penjual ini <i class="fa-solid fa-arrow-right"></i>
           </a>
         </div>
 

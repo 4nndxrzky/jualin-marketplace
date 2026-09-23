@@ -2992,3 +2992,40 @@ select.form-control {
   }
 }
 
+/* Seller Public Store Header */
+.seller-store-header {
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.seller-store-main {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .seller-store-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .seller-store-actions {
+    width: 100%;
+  }
+
+  .seller-store-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

@@ -18,24 +18,24 @@
     // 2. Helper URL Builder untuk Parameter Filter Preservasi
     // --------------------------------------------------------------------------
     if (! function_exists('filterUrl')) {
-        function filterUrl(array $overrides = []): string
-        {
-            $params = $_GET;
+    function filterUrl(array $overrides = []): string
+    {
+        $params = $_GET;
 
-            // Reset ke halaman 1 jika filter pencarian, kategori, lokasi, atau pengurutan berganti
-            if (! array_key_exists('page', $overrides) && (isset($overrides['c']) || isset($overrides['q']) || isset($overrides['loc']) || isset($overrides['sort']))) {
-                unset($params['page']);
-            }
-
-            foreach ($overrides as $key => $val) {
-                if ($val === null || $val === '') {
-                    unset($params[$key]);
-                } else {
-                    $params[$key] = $val;
-                }
-            }
-            return 'index.php' . (! empty($params) ? '?' . http_build_query($params) : '');
+        // Reset ke halaman 1 jika filter pencarian, kategori, lokasi, atau pengurutan berganti
+        if (! array_key_exists('page', $overrides) && (isset($overrides['c']) || isset($overrides['q']) || isset($overrides['loc']) || isset($overrides['sort']))) {
+            unset($params['page']);
         }
+
+        foreach ($overrides as $key => $val) {
+            if ($val === null || $val === '') {
+                unset($params[$key]);
+            } else {
+                $params[$key] = $val;
+            }
+        }
+        return 'index.php' . (! empty($params) ? '?' . http_build_query($params) : '');
+    }
     }
 
     // --------------------------------------------------------------------------
@@ -96,7 +96,7 @@
 
     $sqlCount = "SELECT COUNT(*) FROM ads a";
     if (! empty($where)) {
-        $sqlCount .= " WHERE " . implode(" AND ", $where);
+    $sqlCount .= " WHERE " . implode(" AND ", $where);
     }
     $stmtCount = $pdo->prepare($sqlCount);
     $stmtCount->execute($params);
@@ -104,7 +104,7 @@
 
     $totalPages = $totalRecords > 0 ? (int) ceil($totalRecords / $perPage) : 1;
     if ($page > $totalPages && $totalRecords > 0) {
-        $page = $totalPages;
+    $page = $totalPages;
     }
     $offset = ($page - 1) * $perPage;
 
@@ -116,7 +116,7 @@
 ";
 
     if (! empty($where)) {
-        $sqlAds .= " WHERE " . implode(" AND ", $where);
+    $sqlAds .= " WHERE " . implode(" AND ", $where);
     }
     $sqlAds .= " " . $orderBy . " LIMIT " . (int) $perPage . " OFFSET " . (int) $offset;
 
@@ -554,30 +554,30 @@
 
                 <!-- Angka Halaman -->
                 <?php
-                  $startPage = max(1, $page - 2);
-                  $endPage   = min($totalPages, $page + 2);
+                    $startPage = max(1, $page - 2);
+                    $endPage   = min($totalPages, $page + 2);
 
-                  if ($startPage > 1) {
-                      echo '<a href="' . htmlspecialchars(filterUrl(['page' => 1]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">1</a>';
-                      if ($startPage > 2) {
-                          echo '<span class="pagination-ellipsis">&hellip;</span>';
-                      }
-                  }
+                    if ($startPage > 1) {
+                        echo '<a href="' . htmlspecialchars(filterUrl(['page' => 1]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">1</a>';
+                        if ($startPage > 2) {
+                            echo '<span class="pagination-ellipsis">&hellip;</span>';
+                        }
+                    }
 
-                  for ($p = $startPage; $p <= $endPage; $p++) {
-                      if ($p === $page) {
-                          echo '<span class="pagination-link active" aria-current="page">' . $p . '</span>';
-                      } else {
-                          echo '<a href="' . htmlspecialchars(filterUrl(['page' => $p]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $p . '</a>';
-                      }
-                  }
+                    for ($p = $startPage; $p <= $endPage; $p++) {
+                        if ($p === $page) {
+                            echo '<span class="pagination-link active" aria-current="page">' . $p . '</span>';
+                        } else {
+                            echo '<a href="' . htmlspecialchars(filterUrl(['page' => $p]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $p . '</a>';
+                        }
+                    }
 
-                  if ($endPage < $totalPages) {
-                      if ($endPage < $totalPages - 1) {
-                          echo '<span class="pagination-ellipsis">&hellip;</span>';
-                      }
-                      echo '<a href="' . htmlspecialchars(filterUrl(['page' => $totalPages]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $totalPages . '</a>';
-                  }
+                    if ($endPage < $totalPages) {
+                        if ($endPage < $totalPages - 1) {
+                            echo '<span class="pagination-ellipsis">&hellip;</span>';
+                        }
+                        echo '<a href="' . htmlspecialchars(filterUrl(['page' => $totalPages]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $totalPages . '</a>';
+                    }
                 ?>
 
                 <!-- Tombol Selanjutnya (Next) -->
@@ -593,7 +593,7 @@
               </nav>
 
               <div class="pagination-summary">
-                Menampilkan <strong><?php echo ($offset + 1); ?> - <?php echo min($offset + $perPage, $totalRecords); ?></strong> dari <strong><?php echo $totalRecords; ?></strong> iklan
+                Menampilkan <strong><?php echo($offset + 1); ?> - <?php echo min($offset + $perPage, $totalRecords); ?></strong> dari <strong><?php echo $totalRecords; ?></strong> iklan
               </div>
             </div>
           <?php endif; ?>

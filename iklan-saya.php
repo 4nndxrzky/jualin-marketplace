@@ -206,7 +206,7 @@
       <div class="my-ads-card">
         <div class="my-ads-list">
           <?php foreach ($myAds as $index => $ad): ?>
-            <article class="my-ad-item <?php echo ($index >= 10) ? 'my-ad-item-extra' : ''; ?>" <?php echo ($index >= 10) ? 'style="display: none;"' : ''; ?>>
+            <article class="my-ad-item <?php echo($index >= 10) ? 'my-ad-item-extra' : ''; ?>" <?php echo($index >= 10) ? 'style="display: none;"' : ''; ?>>
               <div class="my-ad-main-info">
                 <!-- Thumbnail Foto -->
                 <div class="my-ad-thumb">
@@ -267,7 +267,7 @@
           <!-- Fitur Show More (Limit Awal 10 Konten) Sesuai Permintaan -->
           <div class="show-more-wrapper" id="show-more-wrapper">
             <button type="button" class="btn btn-outline show-more-btn" id="btn-show-more" aria-label="Tampilkan lebih banyak iklan">
-              <i class="fa-solid fa-chevron-down"></i> Muat Lebih Banyak (<span id="remaining-count"><?php echo ($totalAds - 10); ?></span> Iklan Lagi)
+              <i class="fa-solid fa-chevron-down"></i> Muat Lebih Banyak (<span id="remaining-count"><?php echo($totalAds - 10); ?></span> Iklan Lagi)
             </button>
           </div>
         <?php endif; ?>
