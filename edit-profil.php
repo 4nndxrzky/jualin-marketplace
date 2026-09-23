@@ -194,31 +194,6 @@
           OLX<span>Clone</span>
         </a>
 
-        <!-- Lokasi Selector -->
-        <div class="location-dropdown-wrapper">
-          <button class="location-selector" aria-label="Pilih lokasi" type="button" aria-haspopup="true" aria-expanded="false">
-            <i class="fa-solid fa-location-dot"></i>
-            <span>Indonesia</span>
-            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
-          </button>
-          <div class="location-menu" role="menu">
-            <a href="index.php" class="location-item active">
-              <i class="fa-solid fa-earth-asia"></i> Semua Indonesia
-            </a>
-            <?php foreach ($locations as $loc): ?>
-              <a href="index.php?loc=<?php echo urlencode($loc); ?>" class="location-item">
-                <i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($loc, ENT_QUOTES, 'UTF-8'); ?>
-              </a>
-            <?php endforeach; ?>
-          </div>
-        </div>
-
-        <!-- Search Bar -->
-        <form class="search-bar" action="index.php" method="GET" role="search">
-          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
-          <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </form>
-
         <!-- Auth Header Actions -->
         <div class="header-actions">
           <div class="user-menu-wrapper">
@@ -237,6 +212,9 @@
               </a>
               <a href="iklan-saya.php" class="dropdown-item" role="menuitem">
                 <i class="fa-solid fa-box-open"></i> Iklan Saya
+              </a>
+              <a href="penjual.php?id=<?php echo (int) $userId; ?>" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-store"></i> Toko Saya
               </a>
               <div class="dropdown-divider"></div>
               <a href="logout.php" class="dropdown-item danger-item" role="menuitem">

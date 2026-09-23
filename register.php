@@ -16,14 +16,16 @@
     exit;
     }
 
-    $errors = [];
-    $name   = '';
-    $email  = '';
+    $errors   = [];
+    $name     = '';
+    $email    = '';
+    $whatsapp = '';
 
     // Proses Pengiriman Form (POST)
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name                  = trim($_POST['name'] ?? '');
     $email                 = trim($_POST['email'] ?? '');
+    $whatsapp              = trim($_POST['whatsapp'] ?? '');
     $password              = $_POST['password'] ?? '';
     $password_confirmation = $_POST['password_confirmation'] ?? '';
     $agree_terms           = isset($_POST['agree_terms']);
@@ -51,7 +53,18 @@
         }
     }
 
-    // 3. Validasi Password
+    // 3. Validasi WhatsApp (Opsional, tapi jika diisi dicek formatnya)
+    $cleanWa = null;
+    if (! empty($whatsapp)) {
+        $cleanPhone = preg_replace('/[^0-9+]/', '', $whatsapp);
+        if (strlen($cleanPhone) < 8 || strlen($cleanPhone) > 20) {
+            $errors[] = "Nomor WhatsApp harus terdiri dari 8 hingga 20 digit angka.";
+        } else {
+            $cleanWa = $cleanPhone;
+        }
+    }
+
+    // 4. Validasi Password
     if (empty($password)) {
         $errors[] = "Kata sandi wajib diisi.";
     } elseif (strlen($password) < 8) {
@@ -60,21 +73,21 @@
         $errors[] = "Konfirmasi kata sandi tidak cocok.";
     }
 
-    // 4. Validasi Persetujuan Syarat & Ketentuan
+    // 5. Validasi Persetujuan Syarat & Ketentuan
     if (! $agree_terms) {
         $errors[] = "Anda wajib menyetujui Syarat & Ketentuan serta Kebijakan Privasi.";
     }
 
-    // 5. Eksekusi Simpan ke Database Jika Bebas Error
+    // 6. Eksekusi Simpan ke Database Jika Bebas Error
     if (empty($errors)) {
         // Enkripsi password menggunakan BCRYPT (menghasilkan hash 60 karakter)
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
         $insertStmt = $pdo->prepare("
-            INSERT INTO users (name, email, password)
-            VALUES (?, ?, ?)
+            INSERT INTO users (name, email, password, whatsapp)
+            VALUES (?, ?, ?, ?)
         ");
-        $insertStmt->execute([$name, $email, $hashedPassword]);
+        $insertStmt->execute([$name, $email, $hashedPassword, $cleanWa]);
 
         // Berikan notifikasi sukses via Flash Message Session
         $_SESSION['flash_success'] = "Pendaftaran berhasil! Akun Anda telah dibuat. Silakan masuk.";
@@ -260,7 +273,26 @@
             <span class="form-hint">Email aktif untuk verifikasi akun dan pemberitahuan transaksi.</span>
           </div>
 
-          <!-- 3. Input Group: Kata Sandi (users.password) -->
+          <!-- 3. Input Group: Nomor WhatsApp (users.whatsapp - Opsional) -->
+          <div class="form-group">
+            <label for="whatsapp" class="form-label">Nomor WhatsApp <span style="font-weight: 400; color: var(--text-muted);">(Opsional)</span></label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true"><i class="fa-brands fa-whatsapp"></i></span>
+              <input
+                type="tel"
+                id="whatsapp"
+                name="whatsapp"
+                class="form-control"
+                placeholder="Contoh: 081234567890"
+                autocomplete="tel"
+                inputmode="tel"
+                maxlength="20"
+                value="<?php echo htmlspecialchars($whatsapp, ENT_QUOTES, 'UTF-8') ?>">
+            </div>
+            <span class="form-hint">Nomor ini memudahkan calon pembeli menghubungi Anda secara langsung saat memasang iklan.</span>
+          </div>
+
+          <!-- 4. Input Group: Kata Sandi (users.password) -->
           <div class="form-group">
             <label for="password" class="form-label">Kata Sandi</label>
             <div class="input-wrapper">
@@ -369,10 +401,10 @@
         <div class="footer-col">
           <h3>Kategori Populer</h3>
           <ul>
-            <li><a href="kategori.php?c=mobil">Mobil Bekas</a></li>
-            <li><a href="kategori.php?c=motor">Motor Bekas</a></li>
-            <li><a href="kategori.php?c=properti">Rumah & Apartemen</a></li>
-            <li><a href="kategori.php?c=elektronik">HP & Laptop</a></li>
+            <li><a href="index.php?c=1">Mobil Bekas</a></li>
+            <li><a href="index.php?c=2">Motor Bekas</a></li>
+            <li><a href="index.php?c=3">Properti</a></li>
+            <li><a href="index.php?c=4">Elektronik & Gadget</a></li>
           </ul>
         </div>
 

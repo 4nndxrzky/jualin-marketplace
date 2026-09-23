@@ -338,6 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================================
   const categoryMoreBtn = document.querySelector(".category-more-btn");
   const categoryNavExpanded = document.querySelector(".category-nav-expanded");
+  const categoryNavWrapper = document.getElementById("category-nav-wrapper");
 
   if (categoryMoreBtn && categoryNavExpanded) {
     const moreTextSpan = categoryMoreBtn.querySelector(".more-text");
@@ -351,6 +352,10 @@ document.addEventListener("DOMContentLoaded", () => {
         "aria-hidden",
         isOpen ? "false" : "true",
       );
+
+      if (categoryNavWrapper) {
+        categoryNavWrapper.classList.toggle("is-expanded", isOpen);
+      }
 
       if (moreTextSpan) {
         moreTextSpan.textContent = isOpen ? "Tutup" : "Lainnya";
@@ -366,6 +371,9 @@ document.addEventListener("DOMContentLoaded", () => {
         categoryMoreBtn.classList.remove("active");
         categoryMoreBtn.setAttribute("aria-expanded", "false");
         categoryNavExpanded.setAttribute("aria-hidden", "true");
+        if (categoryNavWrapper) {
+          categoryNavWrapper.classList.remove("is-expanded");
+        }
         if (moreTextSpan) {
           moreTextSpan.textContent = "Lainnya";
         }
@@ -378,6 +386,9 @@ document.addEventListener("DOMContentLoaded", () => {
         categoryMoreBtn.classList.remove("active");
         categoryMoreBtn.setAttribute("aria-expanded", "false");
         categoryNavExpanded.setAttribute("aria-hidden", "true");
+        if (categoryNavWrapper) {
+          categoryNavWrapper.classList.remove("is-expanded");
+        }
         if (moreTextSpan) {
           moreTextSpan.textContent = "Lainnya";
         }

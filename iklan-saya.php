@@ -106,6 +106,9 @@
               <a href="iklan-saya.php" class="dropdown-item" role="menuitem" style="color: var(--primary); font-weight: 700; background-color: var(--gray-100);">
                 <i class="fa-solid fa-box-open"></i> Iklan Saya
               </a>
+              <a href="penjual.php?id=<?php echo (int) $userId; ?>" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-store"></i> Toko Saya
+              </a>
               <div class="dropdown-divider"></div>
               <a href="logout.php" class="dropdown-item danger-item" role="menuitem">
                 <i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)
@@ -157,15 +160,20 @@
       </div>
     <?php endif; ?>
 
-    <!-- Header Judul & Tombol Pasang Iklan -->
+    <!-- Header Judul & Tombol Aksi -->
     <div class="my-ads-header">
       <div class="my-ads-title-box">
         <h1>Iklan Saya</h1>
         <p>Kelola dan tinjau semua listing iklan yang telah Anda publikasikan.</p>
       </div>
-      <a href="pasang-iklan.php" class="btn btn-solid-primary">
-        <i class="fa-solid fa-plus"></i> Pasang Iklan Baru
-      </a>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="penjual.php?id=<?php echo $userId; ?>" class="btn btn-outline">
+          <i class="fa-solid fa-store"></i> Lihat Toko Publik
+        </a>
+        <a href="pasang-iklan.php" class="btn btn-solid-primary">
+          <i class="fa-solid fa-plus"></i> Pasang Iklan Baru
+        </a>
+      </div>
     </div>
 
     <!-- Ringkasan Statistik Listing Pengguna -->

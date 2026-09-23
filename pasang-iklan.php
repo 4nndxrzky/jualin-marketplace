@@ -21,10 +21,14 @@
     exit;
     }
 
-    $currentUser = [
-    'id'    => (int) $_SESSION['user_id'],
-    'name'  => $_SESSION['user_name'] ?? 'Pengguna',
-    'email' => $_SESSION['user_email'] ?? '',
+    // Ambil data user aktif lengkap dengan nomor whatsapp
+    $stmtUser = $pdo->prepare("SELECT id, name, email, whatsapp FROM users WHERE id = ? LIMIT 1");
+    $stmtUser->execute([$_SESSION['user_id']]);
+    $currentUser = $stmtUser->fetch() ?: [
+        'id'       => (int) $_SESSION['user_id'],
+        'name'     => $_SESSION['user_name'] ?? 'Pengguna',
+        'email'    => $_SESSION['user_email'] ?? '',
+        'whatsapp' => null,
     ];
 
     // Ambil data kategori secara dinamis dari tabel categories
@@ -303,6 +307,9 @@
               <a href="iklan-saya.php" class="dropdown-item" role="menuitem">
                 <i class="fa-solid fa-box-open"></i> Iklan Saya
               </a>
+              <a href="penjual.php?id=<?php echo (int) $currentUser['id']; ?>" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-store"></i> Toko Saya
+              </a>
               <div class="dropdown-divider"></div>
               <a href="logout.php" class="dropdown-item danger-item" role="menuitem">
                 <i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)
@@ -553,8 +560,17 @@
                 <?php echo strtoupper(substr($currentUser['name'], 0, 1)) ?>
               </div>
               <div>
-                <p style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><?php echo htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></p>
-                <p style="font-size: 0.8rem; color: var(--text-muted);"><?php echo htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?> • Akun Terverifikasi</p>
+                <p style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;"><?php echo htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></p>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;"><?php echo htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?> &bull; Akun Terverifikasi</p>
+                <?php if (! empty($currentUser['whatsapp'])): ?>
+                  <p style="font-size: 0.82rem; color: #128c7e; font-weight: 600; margin: 0;">
+                    <i class="fa-brands fa-whatsapp"></i> <?php echo htmlspecialchars($currentUser['whatsapp'], ENT_QUOTES, 'UTF-8'); ?> (Aktif untuk chat pembeli)
+                  </p>
+                <?php else: ?>
+                  <p style="font-size: 0.8rem; color: var(--warning); margin: 0;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Nomor WhatsApp belum diatur &bull; <a href="edit-profil.php" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Atur di Profil</a> agar pembeli dapat langsung chat via WhatsApp.
+                  </p>
+                <?php endif; ?>
               </div>
             </div>
             <span class="form-hint" style="margin-top: 8px; display: block;">

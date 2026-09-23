@@ -1,37 +1,37 @@
 <?php
-/**
+    /**
  * Halaman Profil / Toko Penjual Publik (penjual.php)
  * OLX Clone - Codepolitan
- * 
+ *
  * Menampilkan seluruh etalase iklan yang telah diposting oleh penjual tertentu,
  * dilengkapi identitas penjual, kontak WhatsApp, serta kontrol pagination (limit 20).
  */
 
-session_start();
-require_once __DIR__ . '/koneksi.php';
+    session_start();
+    require_once __DIR__ . '/koneksi.php';
 
-$sellerId = isset($_GET['id']) && is_numeric($_GET['id']) ? (int)$_GET['id'] : 0;
+    $sellerId = isset($_GET['id']) && is_numeric($_GET['id']) ? (int) $_GET['id'] : 0;
 
-if ($sellerId <= 0) {
+    if ($sellerId <= 0) {
     header("Location: index.php");
     exit;
-}
+    }
 
-// Ambil profil penjual dari tabel users
-$stmtSeller = $pdo->prepare("SELECT id, name, email, whatsapp, created_at FROM users WHERE id = ? LIMIT 1");
-$stmtSeller->execute([$sellerId]);
-$seller = $stmtSeller->fetch();
+    // Ambil profil penjual dari tabel users
+    $stmtSeller = $pdo->prepare("SELECT id, name, email, whatsapp, created_at FROM users WHERE id = ? LIMIT 1");
+    $stmtSeller->execute([$sellerId]);
+    $seller = $stmtSeller->fetch();
 
-if (!$seller) {
+    if (! $seller) {
     $_SESSION['flash_error'] = "Profil penjual tidak ditemukan.";
     header("Location: index.php");
     exit;
-}
+    }
 
-// Format nomor WhatsApp untuk tombol chat penjual
-$sellerWa = trim($seller['whatsapp'] ?? '');
-$waUrl    = '';
-if (!empty($sellerWa)) {
+    // Format nomor WhatsApp untuk tombol chat penjual
+    $sellerWa = trim($seller['whatsapp'] ?? '');
+    $waUrl    = '';
+    if (! empty($sellerWa)) {
     $waClean = preg_replace('/[^0-9]/', '', $sellerWa);
     if (str_starts_with($waClean, '0')) {
         $waClean = '62' . substr($waClean, 1);
@@ -40,18 +40,18 @@ if (!empty($sellerWa)) {
     }
     $waMessage = "Halo " . $seller['name'] . ", saya melihat etalase iklan Anda di OLX Clone. Apakah barang-barang yang Anda jual masih tersedia?";
     $waUrl     = "https://wa.me/{$waClean}?text=" . rawurlencode($waMessage);
-}
+    }
 
-// Filter pengurutan & kategori
-$sort      = in_array($_GET['sort'] ?? '', ['terbaru', 'termurah', 'termahal', 'rekomendasi'], true) ? $_GET['sort'] : 'terbaru';
-$catFilter = isset($_GET['c']) && is_numeric($_GET['c']) ? (int)$_GET['c'] : null;
+    // Filter pengurutan & kategori
+    $sort      = in_array($_GET['sort'] ?? '', ['terbaru', 'termurah', 'termahal', 'rekomendasi'], true) ? $_GET['sort'] : 'terbaru';
+    $catFilter = isset($_GET['c']) && is_numeric($_GET['c']) ? (int) $_GET['c'] : null;
 
-// Helper URL untuk menjaga parameter penjual & filter
-if (!function_exists('sellerUrl')) {
+    // Helper URL untuk menjaga parameter penjual & filter
+    if (! function_exists('sellerUrl')) {
     function sellerUrl(array $overrides = []): string
     {
         $params = $_GET;
-        if (!array_key_exists('page', $overrides) && (isset($overrides['c']) || isset($overrides['sort']))) {
+        if (! array_key_exists('page', $overrides) && (isset($overrides['c']) || isset($overrides['sort']))) {
             unset($params['page']);
         }
         foreach ($overrides as $k => $v) {
@@ -61,12 +61,12 @@ if (!function_exists('sellerUrl')) {
                 $params[$k] = $v;
             }
         }
-        return 'penjual.php' . (!empty($params) ? '?' . http_build_query($params) : '');
+        return 'penjual.php' . (! empty($params) ? '?' . http_build_query($params) : '');
     }
-}
+    }
 
-// Ambil kategori unik yang dijual oleh penjual ini
-$stmtSellerCats = $pdo->prepare("
+    // Ambil kategori unik yang dijual oleh penjual ini
+    $stmtSellerCats = $pdo->prepare("
     SELECT DISTINCT c.id, c.name, c.icon, COUNT(a.id) as total_ads
     FROM categories c
     INNER JOIN ads a ON a.category_id = c.id
@@ -74,59 +74,59 @@ $stmtSellerCats = $pdo->prepare("
     GROUP BY c.id, c.name, c.icon
     ORDER BY c.id ASC
 ");
-$stmtSellerCats->execute([$sellerId]);
-$sellerCategories = $stmtSellerCats->fetchAll();
+    $stmtSellerCats->execute([$sellerId]);
+    $sellerCategories = $stmtSellerCats->fetchAll();
 
-// Pagination (Limit 20 per halaman sesuai standar project)
-$page    = isset($_GET['page']) && is_numeric($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-$perPage = 20;
+    // Pagination (Limit 20 per halaman sesuai standar project)
+    $page    = isset($_GET['page']) && is_numeric($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+    $perPage = 20;
 
-$where  = ["a.user_id = ?"];
-$params = [$sellerId];
+    $where  = ["a.user_id = ?"];
+    $params = [$sellerId];
 
-if ($catFilter !== null) {
+    if ($catFilter !== null) {
     $where[]  = "a.category_id = ?";
     $params[] = $catFilter;
-}
+    }
 
-$sqlCount = "SELECT COUNT(*) FROM ads a WHERE " . implode(" AND ", $where);
-$stmtCount = $pdo->prepare($sqlCount);
-$stmtCount->execute($params);
-$totalRecords = (int)$stmtCount->fetchColumn();
+    $sqlCount  = "SELECT COUNT(*) FROM ads a WHERE " . implode(" AND ", $where);
+    $stmtCount = $pdo->prepare($sqlCount);
+    $stmtCount->execute($params);
+    $totalRecords = (int) $stmtCount->fetchColumn();
 
-$totalPages = $totalRecords > 0 ? (int)ceil($totalRecords / $perPage) : 1;
-if ($page > $totalPages && $totalRecords > 0) {
+    $totalPages = $totalRecords > 0 ? (int) ceil($totalRecords / $perPage) : 1;
+    if ($page > $totalPages && $totalRecords > 0) {
     $page = $totalPages;
-}
-$offset = ($page - 1) * $perPage;
+    }
+    $offset = ($page - 1) * $perPage;
 
-$orderBy = match ($sort) {
+    $orderBy = match ($sort) {
     'termurah'    => 'ORDER BY a.price ASC',
     'termahal'    => 'ORDER BY a.price DESC',
     'rekomendasi' => 'ORDER BY a.price DESC, a.id DESC',
     default       => 'ORDER BY a.created_at DESC',
-};
+    };
 
-$sqlAds = "
+    $sqlAds = "
     SELECT a.*, c.name AS category_name, c.icon AS category_icon,
            (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
     FROM ads a
     LEFT JOIN categories c ON a.category_id = c.id
     WHERE " . implode(" AND ", $where) . "
     {$orderBy}
-    LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
+    LIMIT " . (int) $perPage . " OFFSET " . (int) $offset;
 
-$stmtAds = $pdo->prepare($sqlAds);
-$stmtAds->execute($params);
-$ads = $stmtAds->fetchAll();
+    $stmtAds = $pdo->prepare($sqlAds);
+    $stmtAds->execute($params);
+    $ads = $stmtAds->fetchAll();
 
-// Lokasi untuk selector header
-$stmtLoc = $pdo->query("SELECT DISTINCT location FROM ads WHERE location IS NOT NULL AND TRIM(location) != '' ORDER BY location ASC");
-$locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
+    // Lokasi untuk selector header
+    $stmtLoc   = $pdo->query("SELECT DISTINCT location FROM ads WHERE location IS NOT NULL AND TRIM(location) != '' ORDER BY location ASC");
+    $locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
 
-// Kategori untuk footer
-$stmtAllCats = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
-$allCategories = $stmtAllCats->fetchAll();
+    // Kategori untuk footer
+    $stmtAllCats   = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+    $allCategories = $stmtAllCats->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -168,31 +168,6 @@ $allCategories = $stmtAllCats->fetchAll();
           OLX<span>Clone</span>
         </a>
 
-        <!-- Lokasi Selector -->
-        <div class="location-dropdown-wrapper">
-          <button class="location-selector" aria-label="Pilih lokasi" type="button" aria-haspopup="true" aria-expanded="false">
-            <i class="fa-solid fa-location-dot"></i>
-            <span>Indonesia</span>
-            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
-          </button>
-          <div class="location-menu" role="menu">
-            <a href="index.php" class="location-item active">
-              <i class="fa-solid fa-earth-asia"></i> Semua Indonesia
-            </a>
-            <?php foreach ($locations as $loc): ?>
-              <a href="index.php?loc=<?php echo urlencode($loc); ?>" class="location-item">
-                <i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($loc, ENT_QUOTES, 'UTF-8'); ?>
-              </a>
-            <?php endforeach; ?>
-          </div>
-        </div>
-
-        <!-- Search Bar -->
-        <form class="search-bar" action="index.php" method="GET" role="search">
-          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
-          <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </form>
-
         <!-- Auth Header Actions -->
         <div class="header-actions">
           <?php if (isset($_SESSION['user_id'])): ?>
@@ -212,6 +187,9 @@ $allCategories = $stmtAllCats->fetchAll();
                 </a>
                 <a href="iklan-saya.php" class="dropdown-item" role="menuitem">
                   <i class="fa-solid fa-box-open"></i> Iklan Saya
+                </a>
+                <a href="penjual.php?id=<?php echo (int) $_SESSION['user_id']; ?>" class="dropdown-item" role="menuitem">
+                  <i class="fa-solid fa-store"></i> Toko Saya
                 </a>
                 <div class="dropdown-divider"></div>
                 <a href="logout.php" class="dropdown-item danger-item" role="menuitem">
@@ -273,7 +251,7 @@ $allCategories = $stmtAllCats->fetchAll();
       </div>
 
       <!-- Aksi Kontak Penjual -->
-      <?php if (!empty($waUrl)): ?>
+      <?php if (! empty($waUrl)): ?>
         <div class="seller-store-actions">
           <a href="<?php echo htmlspecialchars($waUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-solid-primary" style="padding: 12px 24px; font-size: 0.95rem;">
             <i class="fa-brands fa-whatsapp" style="font-size: 1.15rem;"></i> Hubungi Penjual
@@ -295,10 +273,10 @@ $allCategories = $stmtAllCats->fetchAll();
       <div class="filter-sort-wrapper">
         <label for="sort-select"><i class="fa-solid fa-arrow-down-wide-short"></i> Urutkan:</label>
         <select id="sort-select" class="filter-sort-select" aria-label="Urutkan iklan" onchange="window.location.href=this.value;">
-          <option value="<?php echo htmlspecialchars(sellerUrl(['sort' => 'terbaru']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'terbaru') ? 'selected' : ''; ?>>Terbaru</option>
-          <option value="<?php echo htmlspecialchars(sellerUrl(['sort' => 'termurah']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'termurah') ? 'selected' : ''; ?>>Harga Terendah</option>
-          <option value="<?php echo htmlspecialchars(sellerUrl(['sort' => 'termahal']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'termahal') ? 'selected' : ''; ?>>Harga Tertinggi</option>
-          <option value="<?php echo htmlspecialchars(sellerUrl(['sort' => 'rekomendasi']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($sort === 'rekomendasi') ? 'selected' : ''; ?>>Rekomendasi</option>
+          <option value="<?php echo htmlspecialchars(sellerUrl(['sort' => 'terbaru']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo($sort === 'terbaru') ? 'selected' : ''; ?>>Terbaru</option>
+          <option value="<?php echo htmlspecialchars(sellerUrl(['sort' => 'termurah']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo($sort === 'termurah') ? 'selected' : ''; ?>>Harga Terendah</option>
+          <option value="<?php echo htmlspecialchars(sellerUrl(['sort' => 'termahal']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo($sort === 'termahal') ? 'selected' : ''; ?>>Harga Tertinggi</option>
+          <option value="<?php echo htmlspecialchars(sellerUrl(['sort' => 'rekomendasi']), ENT_QUOTES, 'UTF-8'); ?>" <?php echo($sort === 'rekomendasi') ? 'selected' : ''; ?>>Rekomendasi</option>
         </select>
       </div>
     </div>
@@ -309,13 +287,13 @@ $allCategories = $stmtAllCats->fetchAll();
       <div class="ad-grid">
         <?php foreach ($ads as $ad): ?>
           <article class="ad-card">
-            <a href="detail.php?id=<?php echo (int)$ad['id']; ?>" aria-label="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?> - Rp <?php echo number_format($ad['price'], 0, ',', '.'); ?>">
+            <a href="detail.php?id=<?php echo (int) $ad['id']; ?>" aria-label="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?> - Rp <?php echo number_format($ad['price'], 0, ',', '.'); ?>">
               <div class="ad-card-image">
-                <?php if (!empty($ad['image_path']) && file_exists(__DIR__ . '/' . $ad['image_path'])): ?>
+                <?php if (! empty($ad['image_path']) && file_exists(__DIR__ . '/' . $ad['image_path'])): ?>
                   <img src="<?php echo htmlspecialchars($ad['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy">
                 <?php else: ?>
                   <div class="img-placeholder" aria-hidden="true">
-                    <i class="<?php echo !empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open'; ?>"></i>
+                    <i class="<?php echo ! empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open'; ?>"></i>
                   </div>
                 <?php endif; ?>
                 <button class="ad-card-wishlist" aria-label="Simpan ke wishlist" type="button">
@@ -352,30 +330,30 @@ $allCategories = $stmtAllCats->fetchAll();
 
             <!-- Nomor Halaman -->
             <?php
-              $startPage = max(1, $page - 2);
-              $endPage   = min($totalPages, $page + 2);
+                $startPage = max(1, $page - 2);
+                $endPage   = min($totalPages, $page + 2);
 
-              if ($startPage > 1) {
-                  echo '<a href="' . htmlspecialchars(sellerUrl(['page' => 1]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">1</a>';
-                  if ($startPage > 2) {
-                      echo '<span class="pagination-ellipsis">&hellip;</span>';
-                  }
-              }
+                if ($startPage > 1) {
+                    echo '<a href="' . htmlspecialchars(sellerUrl(['page' => 1]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">1</a>';
+                    if ($startPage > 2) {
+                        echo '<span class="pagination-ellipsis">&hellip;</span>';
+                    }
+                }
 
-              for ($p = $startPage; $p <= $endPage; $p++) {
-                  if ($p === $page) {
-                      echo '<span class="pagination-link active" aria-current="page">' . $p . '</span>';
-                  } else {
-                      echo '<a href="' . htmlspecialchars(sellerUrl(['page' => $p]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $p . '</a>';
-                  }
-              }
+                for ($p = $startPage; $p <= $endPage; $p++) {
+                    if ($p === $page) {
+                        echo '<span class="pagination-link active" aria-current="page">' . $p . '</span>';
+                    } else {
+                        echo '<a href="' . htmlspecialchars(sellerUrl(['page' => $p]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $p . '</a>';
+                    }
+                }
 
-              if ($endPage < $totalPages) {
-                  if ($endPage < $totalPages - 1) {
-                      echo '<span class="pagination-ellipsis">&hellip;</span>';
-                  }
-                  echo '<a href="' . htmlspecialchars(sellerUrl(['page' => $totalPages]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $totalPages . '</a>';
-              }
+                if ($endPage < $totalPages) {
+                    if ($endPage < $totalPages - 1) {
+                        echo '<span class="pagination-ellipsis">&hellip;</span>';
+                    }
+                    echo '<a href="' . htmlspecialchars(sellerUrl(['page' => $totalPages]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $totalPages . '</a>';
+                }
             ?>
 
             <!-- Tombol Next -->
@@ -391,7 +369,7 @@ $allCategories = $stmtAllCats->fetchAll();
           </nav>
 
           <div class="pagination-summary">
-            Menampilkan <strong><?php echo ($offset + 1); ?> - <?php echo min($offset + $perPage, $totalRecords); ?></strong> dari <strong><?php echo $totalRecords; ?></strong> iklan
+            Menampilkan <strong><?php echo($offset + 1); ?> - <?php echo min($offset + $perPage, $totalRecords); ?></strong> dari <strong><?php echo $totalRecords; ?></strong> iklan
           </div>
         </div>
       <?php endif; ?>
@@ -441,7 +419,7 @@ $allCategories = $stmtAllCats->fetchAll();
           <ul>
             <?php foreach (array_slice($allCategories, 0, 4) as $popularCat): ?>
               <li>
-                <a href="index.php?c=<?php echo (int)$popularCat['id']; ?>">
+                <a href="index.php?c=<?php echo (int) $popularCat['id']; ?>">
                   <?php echo htmlspecialchars($popularCat['name'], ENT_QUOTES, 'UTF-8'); ?>
                 </a>
               </li>
@@ -492,3 +470,4 @@ $allCategories = $stmtAllCats->fetchAll();
 </body>
 
 </html>
+

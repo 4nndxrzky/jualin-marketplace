@@ -330,10 +330,10 @@
         <div class="footer-col">
           <h3>Kategori Populer</h3>
           <ul>
-            <li><a href="kategori.php?c=mobil">Mobil Bekas</a></li>
-            <li><a href="kategori.php?c=motor">Motor Bekas</a></li>
-            <li><a href="kategori.php?c=properti">Rumah & Apartemen</a></li>
-            <li><a href="kategori.php?c=elektronik">HP & Laptop</a></li>
+            <li><a href="index.php?c=1">Mobil Bekas</a></li>
+            <li><a href="index.php?c=2">Motor Bekas</a></li>
+            <li><a href="index.php?c=3">Properti</a></li>
+            <li><a href="index.php?c=4">Elektronik & Gadget</a></li>
           </ul>
         </div>
 

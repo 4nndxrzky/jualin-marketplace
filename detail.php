@@ -207,6 +207,9 @@
                 <a href="iklan-saya.php" class="dropdown-item" role="menuitem">
                   <i class="fa-solid fa-box-open"></i> Iklan Saya
                 </a>
+                <a href="penjual.php?id=<?php echo (int) $_SESSION['user_id']; ?>" class="dropdown-item" role="menuitem">
+                  <i class="fa-solid fa-store"></i> Toko Saya
+                </a>
                 <div class="dropdown-divider"></div>
                 <a href="logout.php" class="dropdown-item danger-item" role="menuitem">
                   <i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)
