@@ -1,8 +1,8 @@
 <?php
-/**
+    /**
  * Halaman Edit Iklan (edit-iklan.php)
  * OLX Clone - Codepolitan
- * 
+ *
  * Fitur:
  * 1. Proteksi Autentikasi ketat (wajib login).
  * 2. Otorisasi Kepemilikan (hanya pemilik listing yang berhak mengedit).
@@ -12,61 +12,61 @@
  * 6. Transaksi database PDO untuk menjamin integritas ads & ad_images.
  */
 
-session_start();
-require_once __DIR__ . '/koneksi.php';
+    session_start();
+    require_once __DIR__ . '/koneksi.php';
 
-// Proteksi Autentikasi: Wajib login
-if (!isset($_SESSION['user_id'])) {
+    // Proteksi Autentikasi: Wajib login
+    if (! isset($_SESSION['user_id'])) {
     $_SESSION['flash_error'] = "Silakan masuk ke akun Anda terlebih dahulu.";
     header("Location: login.php");
     exit;
-}
+    }
 
-$userId    = (int)$_SESSION['user_id'];
-$userName  = $_SESSION['user_name'] ?? 'Pengguna';
-$userEmail = $_SESSION['user_email'] ?? '';
-$adId      = isset($_GET['id']) && is_numeric($_GET['id']) ? (int)$_GET['id'] : 0;
+    $userId    = (int) $_SESSION['user_id'];
+    $userName  = $_SESSION['user_name'] ?? 'Pengguna';
+    $userEmail = $_SESSION['user_email'] ?? '';
+    $adId      = isset($_GET['id']) && is_numeric($_GET['id']) ? (int) $_GET['id'] : 0;
 
-// Verifikasi Kepemilikan Iklan (Keamanan Ketat: Hanya pemilik sah yang bisa mengedit)
-$stmt = $pdo->prepare("SELECT * FROM ads WHERE id = ? AND user_id = ? LIMIT 1");
-$stmt->execute([$adId, $userId]);
-$ad = $stmt->fetch();
+    // Verifikasi Kepemilikan Iklan (Keamanan Ketat: Hanya pemilik sah yang bisa mengedit)
+    $stmt = $pdo->prepare("SELECT * FROM ads WHERE id = ? AND user_id = ? LIMIT 1");
+    $stmt->execute([$adId, $userId]);
+    $ad = $stmt->fetch();
 
-if (!$ad) {
+    if (! $ad) {
     $_SESSION['flash_error'] = "Iklan tidak ditemukan atau Anda tidak memiliki hak akses untuk mengedit iklan tersebut.";
     header("Location: iklan-saya.php");
     exit;
-}
+    }
 
-// Ambil data user aktif untuk kartu profil penjual
-$stmtUser = $pdo->prepare("SELECT id, name, email FROM users WHERE id = ? LIMIT 1");
-$stmtUser->execute([$userId]);
-$currentUser = $stmtUser->fetch();
+    // Ambil data user aktif untuk kartu profil penjual
+    $stmtUser = $pdo->prepare("SELECT id, name, email FROM users WHERE id = ? LIMIT 1");
+    $stmtUser->execute([$userId]);
+    $currentUser = $stmtUser->fetch();
 
-// Ambil data kategori
-$stmtCategories = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
-$categories     = $stmtCategories->fetchAll();
+    // Ambil data kategori
+    $stmtCategories = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+    $categories     = $stmtCategories->fetchAll();
 
-// Ambil foto-foto yang sudah ada
-$stmtImgs = $pdo->prepare("SELECT * FROM ad_images WHERE ad_id = ? ORDER BY id ASC");
-$stmtImgs->execute([$adId]);
-$existingImages = $stmtImgs->fetchAll();
+    // Ambil foto-foto yang sudah ada
+    $stmtImgs = $pdo->prepare("SELECT * FROM ad_images WHERE ad_id = ? ORDER BY id ASC");
+    $stmtImgs->execute([$adId]);
+    $existingImages = $stmtImgs->fetchAll();
 
-// Ambil daftar lokasi untuk header
-$stmtLoc = $pdo->query("SELECT DISTINCT location FROM ads WHERE location IS NOT NULL AND TRIM(location) != '' ORDER BY location ASC");
-$locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
+    // Ambil daftar lokasi untuk header
+    $stmtLoc   = $pdo->query("SELECT DISTINCT location FROM ads WHERE location IS NOT NULL AND TRIM(location) != '' ORDER BY location ASC");
+    $locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
 
-$errors      = [];
-$title       = $ad['title'];
-$category_id = (int)$ad['category_id'];
-$price       = (float)$ad['price'];
-$location    = $ad['location'];
-$description = $ad['description'];
+    $errors      = [];
+    $title       = $ad['title'];
+    $category_id = (int) $ad['category_id'];
+    $price       = (float) $ad['price'];
+    $location    = $ad['location'];
+    $description = $ad['description'];
 
-// Proses Pembaruan Iklan (POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Proses Pembaruan Iklan (POST)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title        = trim($_POST['title'] ?? '');
-    $category_id  = (int)($_POST['category_id'] ?? 0);
+    $category_id  = (int) ($_POST['category_id'] ?? 0);
     $priceInput   = trim($_POST['price'] ?? '');
     $location     = trim($_POST['location'] ?? '');
     $description  = trim($_POST['description'] ?? '');
@@ -85,16 +85,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $catCheck = $pdo->prepare("SELECT id FROM categories WHERE id = ?");
         $catCheck->execute([$category_id]);
-        if (!$catCheck->fetch()) {
+        if (! $catCheck->fetch()) {
             $errors[] = "Kategori yang dipilih tidak valid.";
         }
     }
 
     // 3. Validasi Harga
-    if ($priceInput === '' || !is_numeric($priceInput) || (float)$priceInput < 0) {
+    if ($priceInput === '' || ! is_numeric($priceInput) || (float) $priceInput < 0) {
         $errors[] = "Harga barang wajib berupa angka nominal positif yang valid.";
     } else {
-        $price = (float)$priceInput;
+        $price = (float) $priceInput;
     }
 
     // 4. Validasi Lokasi
@@ -111,10 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 6. Penanganan Unggah Foto Baru Tambahan
     $newUploadedImages = [];
-    $uploadDir = __DIR__ . '/uploads/ads/';
+    $uploadDir         = __DIR__ . '/uploads/ads/';
 
-    if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
-        if (!is_dir($uploadDir)) {
+    if (isset($_FILES['images']) && ! empty($_FILES['images']['name'][0])) {
+        if (! is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
 
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fileSize = $_FILES['images']['size'][$i];
             $mimeType = $finfo->file($fileTmp);
 
-            if (!array_key_exists($mimeType, $allowedMimes)) {
+            if (! array_key_exists($mimeType, $allowedMimes)) {
                 $errors[] = "Format foto baru ke-" . ($i + 1) . " tidak didukung. Harap gunakan format JPG, PNG, atau WebP.";
                 continue;
             }
@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // A. Update data iklan di tabel ads
             $updateStmt = $pdo->prepare("
-                UPDATE ads 
+                UPDATE ads
                 SET category_id = ?, title = ?, description = ?, price = ?, location = ?
                 WHERE id = ? AND user_id = ?
             ");
@@ -188,16 +188,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $price,
                 $location,
                 $adId,
-                $userId
+                $userId,
             ]);
 
             // B. Hapus foto lama yang dicentang pengguna
-            if (!empty($deleteImages)) {
+            if (! empty($deleteImages)) {
                 $delSelectStmt = $pdo->prepare("SELECT id, image_path FROM ad_images WHERE id = ? AND ad_id = ?");
                 $delStmt       = $pdo->prepare("DELETE FROM ad_images WHERE id = ? AND ad_id = ?");
 
                 foreach ($deleteImages as $delImgId) {
-                    $delImgId = (int)$delImgId;
+                    $delImgId = (int) $delImgId;
                     $delSelectStmt->execute([$delImgId, $adId]);
                     $row = $delSelectStmt->fetch();
 
@@ -212,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // C. Simpan foto-foto baru yang diunggah
-            if (!empty($newUploadedImages)) {
+            if (! empty($newUploadedImages)) {
                 $insImgStmt = $pdo->prepare("INSERT INTO ad_images (ad_id, image_path) VALUES (?, ?)");
                 foreach ($newUploadedImages as $newPath) {
                     $insImgStmt->execute([$adId, $newPath]);
@@ -237,7 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = "Terjadi kesalahan pada sistem database: " . $e->getMessage();
         }
     }
-}
+    }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -279,33 +279,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           OLX<span>Clone</span>
         </a>
 
-        <!-- Lokasi Selector -->
-        <div class="location-dropdown-wrapper">
-          <button class="location-selector" aria-label="Pilih lokasi" type="button" aria-haspopup="true" aria-expanded="false">
-            <i class="fa-solid fa-location-dot"></i>
-            <span>Indonesia</span>
-            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
-          </button>
-          <div class="location-menu" role="menu">
-            <a href="index.php" class="location-item active">
-              <i class="fa-solid fa-earth-asia"></i> Semua Indonesia
-            </a>
-            <?php foreach ($locations as $loc): ?>
-              <a href="index.php?loc=<?php echo urlencode($loc); ?>" class="location-item">
-                <i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($loc, ENT_QUOTES, 'UTF-8'); ?>
-              </a>
-            <?php endforeach; ?>
-          </div>
-        </div>
-
-        <!-- Search Bar -->
-        <form class="search-bar" action="index.php" method="GET" role="search">
-          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
-          <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </form>
-
-        <!-- Auth Header Actions -->
+        <!-- Auth Action Navigasi -->
         <div class="header-actions">
+          <a href="iklan-saya.php" class="btn btn-outline" aria-label="Kembali ke Iklan Saya">
+            <i class="fa-solid fa-arrow-left"></i> Iklan Saya
+          </a>
           <div class="user-menu-wrapper">
             <button type="button" class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
               <span class="user-avatar-sm"><?php echo strtoupper(substr($userName, 0, 1)); ?></span>
@@ -329,9 +307,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </a>
             </div>
           </div>
-          <a href="pasang-iklan.php" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Jual
-          </a>
         </div>
 
       </div>
@@ -347,7 +322,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <ol class="breadcrumb">
         <li><a href="index.php">Beranda</a></li>
         <li><a href="iklan-saya.php">Iklan Saya</a></li>
-        <li aria-current="page">Edit Iklan #<?php echo str_pad((string)$adId, 5, '0', STR_PAD_LEFT); ?></li>
+        <li aria-current="page">Edit Iklan #<?php echo str_pad((string) $adId, 5, '0', STR_PAD_LEFT); ?></li>
       </ol>
     </nav>
   </div>
@@ -365,11 +340,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Banner Header Form -->
         <div class="post-ad-header">
           <h1>Edit Iklan Listing</h1>
-          <p>Perbarui rincian, foto, harga, atau lokasi untuk iklan #<?php echo str_pad((string)$adId, 5, '0', STR_PAD_LEFT); ?> di bawah ini.</p>
+          <p>Perbarui rincian, foto, harga, atau lokasi untuk iklan #<?php echo str_pad((string) $adId, 5, '0', STR_PAD_LEFT); ?> di bawah ini.</p>
         </div>
 
         <!-- NOTIFIKASI ERROR JIKA ADA -->
-        <?php if (!empty($errors)): ?>
+        <?php if (! empty($errors)): ?>
           <div class="alert alert-danger" role="alert" style="margin-bottom: 24px;">
             <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
             <div class="alert-content">
@@ -385,7 +360,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <!-- FORM UTAMA DENGAN ENCTYPE MULTIPART -->
-        <form class="post-ad-form" action="edit-iklan.php?id=<?php echo (int)$adId; ?>" method="POST" enctype="multipart/form-data">
+        <form class="post-ad-form" action="edit-iklan.php?id=<?php echo (int) $adId; ?>" method="POST" enctype="multipart/form-data">
 
           <!-- ==================== CARD 1: PILIH KATEGORI (Selaras dengan pasang-iklan.php) ==================== -->
           <section class="post-ad-card" aria-labelledby="heading-cat">
@@ -403,7 +378,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <select name="category_id" id="category_id" class="form-control" required aria-required="true">
                   <option value="" disabled>-- Pilih Kategori Barang --</option>
                   <?php foreach ($categories as $cat): ?>
-                    <option value="<?php echo (int)$cat['id']; ?>" <?php echo ((int)$category_id === (int)$cat['id']) ? 'selected' : ''; ?>>
+                    <option value="<?php echo (int) $cat['id']; ?>" <?php echo((int) $category_id === (int) $cat['id']) ? 'selected' : ''; ?>>
                       <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>
                     </option>
                   <?php endforeach; ?>
@@ -421,7 +396,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </h2>
 
             <!-- Foto yang Tersimpan di Database -->
-            <?php if (!empty($existingImages)): ?>
+            <?php if (! empty($existingImages)): ?>
               <div style="margin-bottom: 22px;">
                 <label class="form-label" style="display: flex; align-items: center; justify-content: space-between;">
                   <span>Foto yang Tersimpan (<?php echo count($existingImages); ?> Foto)</span>
@@ -434,7 +409,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="existing-photo-item">
                       <img src="<?php echo htmlspecialchars($img['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="Foto Listing">
                       <label class="existing-photo-delete-label">
-                        <input type="checkbox" name="delete_images[]" value="<?php echo (int)$img['id']; ?>">
+                        <input type="checkbox" name="delete_images[]" value="<?php echo (int) $img['id']; ?>">
                         <span><i class="fa-solid fa-trash-can"></i> Hapus Foto</span>
                       </label>
                     </div>
@@ -548,7 +523,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   min="0"
                   step="1000"
                   required
-                  value="<?php echo htmlspecialchars((string)(int)$price, ENT_QUOTES, 'UTF-8'); ?>"
+                  value="<?php echo htmlspecialchars((string) (int) $price, ENT_QUOTES, 'UTF-8'); ?>"
                   aria-required="true">
               </div>
               <span class="form-hint">Tuliskan nominal angka saja tanpa titik atau koma (contoh: 185000000).</span>

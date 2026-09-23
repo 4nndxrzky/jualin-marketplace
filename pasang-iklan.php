@@ -280,14 +280,7 @@
         <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
           OLX<span>Clone</span>
         </a>
-
-        <!-- Search Bar -->
-        <form class="search-form" action="search.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
-          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, laptop, dan lainnya..." autocomplete="off">
-          <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </form>
-
+        
         <!-- Auth Action Navigasi -->
         <div class="header-actions">
           <a href="index.php" class="btn btn-outline" aria-label="Kembali ke beranda">

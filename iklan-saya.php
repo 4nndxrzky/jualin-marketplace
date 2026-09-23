@@ -87,32 +87,6 @@
           OLX<span>Clone</span>
         </a>
 
-        <!-- Lokasi Selector -->
-        <div class="location-dropdown-wrapper">
-          <button class="location-selector" aria-label="Pilih lokasi" type="button" aria-haspopup="true" aria-expanded="false">
-            <i class="fa-solid fa-location-dot"></i>
-            <span>Indonesia</span>
-            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
-          </button>
-          <div class="location-menu" role="menu">
-            <a href="index.php" class="location-item active">
-              <i class="fa-solid fa-earth-asia"></i> Semua Indonesia
-            </a>
-            <?php foreach ($locations as $loc): ?>
-              <a href="index.php?loc=<?php echo urlencode($loc); ?>" class="location-item">
-                <i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($loc, ENT_QUOTES, 'UTF-8'); ?>
-              </a>
-            <?php endforeach; ?>
-          </div>
-        </div>
-
-        <!-- Search Bar -->
-        <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
-          <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
-          <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </form>
-
         <!-- Auth Actions -->
         <div class="header-actions">
           <div class="user-menu-wrapper">
@@ -231,8 +205,8 @@
     <?php if ($totalAds > 0): ?>
       <div class="my-ads-card">
         <div class="my-ads-list">
-          <?php foreach ($myAds as $ad): ?>
-            <article class="my-ad-item">
+          <?php foreach ($myAds as $index => $ad): ?>
+            <article class="my-ad-item <?php echo ($index >= 10) ? 'my-ad-item-extra' : ''; ?>" <?php echo ($index >= 10) ? 'style="display: none;"' : ''; ?>>
               <div class="my-ad-main-info">
                 <!-- Thumbnail Foto -->
                 <div class="my-ad-thumb">
@@ -288,6 +262,15 @@
             </article>
           <?php endforeach; ?>
         </div>
+
+        <?php if ($totalAds > 10): ?>
+          <!-- Fitur Show More (Limit Awal 10 Konten) Sesuai Permintaan -->
+          <div class="show-more-wrapper" id="show-more-wrapper">
+            <button type="button" class="btn btn-outline show-more-btn" id="btn-show-more" aria-label="Tampilkan lebih banyak iklan">
+              <i class="fa-solid fa-chevron-down"></i> Muat Lebih Banyak (<span id="remaining-count"><?php echo ($totalAds - 10); ?></span> Iklan Lagi)
+            </button>
+          </div>
+        <?php endif; ?>
       </div>
     <?php else: ?>
       <!-- State Kosong jika Pengguna Belum Memasang Iklan -->

@@ -398,4 +398,37 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // ==========================================================================
+  // 13. SHOW MORE ADS (IKLAN SAYA PAGE)
+  // ==========================================================================
+  const btnShowMore = document.getElementById("btn-show-more");
+  if (btnShowMore) {
+    btnShowMore.addEventListener("click", function () {
+      const hiddenItems = Array.from(
+        document.querySelectorAll(".my-ad-item-extra"),
+      ).filter((el) => el.style.display === "none");
+      const batchSize = 10;
+      const toShow = hiddenItems.slice(0, batchSize);
+
+      toShow.forEach((item) => {
+        item.style.display = "flex";
+        item.classList.add("fade-in-item");
+      });
+
+      const remaining = hiddenItems.length - toShow.length;
+      const remainingSpan = document.getElementById("remaining-count");
+
+      if (remaining > 0) {
+        if (remainingSpan) remainingSpan.textContent = remaining;
+      } else {
+        const wrapper = document.getElementById("show-more-wrapper");
+        if (wrapper) {
+          wrapper.innerHTML =
+            '<span class="all-loaded-text"><i class="fa-solid fa-circle-check"></i> Seluruh iklan telah ditampilkan</span>';
+        }
+      }
+    });
+  }
 });
+

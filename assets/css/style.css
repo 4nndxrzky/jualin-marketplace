@@ -2853,3 +2853,142 @@ select.form-control {
   }
 }
 
+/* ==========================================================================
+   16. PAGINATION & SHOW MORE STYLES
+   ========================================================================== */
+.pagination-wrapper {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.pagination-wrapper.pagination-left {
+  justify-content: flex-start;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pagination-link,
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background-color: var(--white);
+  border: 1.5px solid var(--gray-200);
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.pagination-link:hover,
+.pagination-btn:hover:not(.disabled) {
+  border-color: var(--primary);
+  background-color: var(--gray-50);
+  color: var(--primary);
+}
+
+.pagination-link.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--white);
+  box-shadow: 0 2px 6px rgba(0, 47, 52, 0.2);
+}
+
+.pagination-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--gray-200);
+  background-color: var(--gray-100);
+  color: var(--text-muted);
+}
+
+.pagination-ellipsis {
+  padding: 0 6px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.pagination-summary {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.pagination-summary strong {
+  color: var(--text-primary);
+}
+
+/* Show More in Iklan Saya */
+.show-more-wrapper {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gray-50);
+  border-top: 1px solid var(--gray-200);
+}
+
+.show-more-btn {
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  background-color: var(--white);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition);
+}
+
+.show-more-btn:hover {
+  background-color: var(--primary);
+  color: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.all-loaded-text {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.all-loaded-text i {
+  color: var(--success);
+}
+
+.fade-in-item {
+  animation: fadeInItem 0.35s ease forwards;
+}
+
+@keyframes fadeInItem {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

@@ -18,18 +18,24 @@
     // 2. Helper URL Builder untuk Parameter Filter Preservasi
     // --------------------------------------------------------------------------
     if (! function_exists('filterUrl')) {
-    function filterUrl(array $overrides = []): string
-    {
-        $params = $_GET;
-        foreach ($overrides as $key => $val) {
-            if ($val === null || $val === '') {
-                unset($params[$key]);
-            } else {
-                $params[$key] = $val;
+        function filterUrl(array $overrides = []): string
+        {
+            $params = $_GET;
+
+            // Reset ke halaman 1 jika filter pencarian, kategori, lokasi, atau pengurutan berganti
+            if (! array_key_exists('page', $overrides) && (isset($overrides['c']) || isset($overrides['q']) || isset($overrides['loc']) || isset($overrides['sort']))) {
+                unset($params['page']);
             }
+
+            foreach ($overrides as $key => $val) {
+                if ($val === null || $val === '') {
+                    unset($params[$key]);
+                } else {
+                    $params[$key] = $val;
+                }
+            }
+            return 'index.php' . (! empty($params) ? '?' . http_build_query($params) : '');
         }
-        return 'index.php' . (! empty($params) ? '?' . http_build_query($params) : '');
-    }
     }
 
     // --------------------------------------------------------------------------
@@ -82,6 +88,26 @@
     default       => 'ORDER BY a.created_at DESC',
     };
 
+    // --------------------------------------------------------------------------
+    // 4.1 Hitung Total Iklan Sesuai Filter untuk Pagination (Limit 20 per halaman)
+    // --------------------------------------------------------------------------
+    $page    = isset($_GET['page']) && is_numeric($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+    $perPage = 20;
+
+    $sqlCount = "SELECT COUNT(*) FROM ads a";
+    if (! empty($where)) {
+        $sqlCount .= " WHERE " . implode(" AND ", $where);
+    }
+    $stmtCount = $pdo->prepare($sqlCount);
+    $stmtCount->execute($params);
+    $totalRecords = (int) $stmtCount->fetchColumn();
+
+    $totalPages = $totalRecords > 0 ? (int) ceil($totalRecords / $perPage) : 1;
+    if ($page > $totalPages && $totalRecords > 0) {
+        $page = $totalPages;
+    }
+    $offset = ($page - 1) * $perPage;
+
     $sqlAds = "
     SELECT a.*, c.name AS category_name, c.icon AS category_icon,
            (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS image_path
@@ -90,9 +116,9 @@
 ";
 
     if (! empty($where)) {
-    $sqlAds .= " WHERE " . implode(" AND ", $where);
+        $sqlAds .= " WHERE " . implode(" AND ", $where);
     }
-    $sqlAds .= " " . $orderBy . " LIMIT 24";
+    $sqlAds .= " " . $orderBy . " LIMIT " . (int) $perPage . " OFFSET " . (int) $offset;
 
     $stmtAds = $pdo->prepare($sqlAds);
     $stmtAds->execute($params);
@@ -425,7 +451,7 @@
               ?>
             </h2>
             <small style="color: var(--text-muted); font-size: 0.85rem;">
-              Menampilkan <?php echo $totalAds; ?> iklan yang ditemukan
+              Menampilkan <?php echo $totalRecords; ?> iklan yang ditemukan
             </small>
           </div>
 
@@ -510,6 +536,67 @@
               </article>
             <?php endforeach; ?>
           </div>
+
+          <?php if ($totalRecords > $perPage): ?>
+            <!-- Pagination Navigasi di Kiri Bawah Sesuai Permintaan -->
+            <div class="pagination-wrapper pagination-left">
+              <nav class="pagination" aria-label="Navigasi Halaman Iklan">
+                <!-- Tombol Sebelumnya (Prev) -->
+                <?php if ($page > 1): ?>
+                  <a href="<?php echo htmlspecialchars(filterUrl(['page' => $page - 1]), ENT_QUOTES, 'UTF-8'); ?>" class="pagination-btn" aria-label="Halaman Sebelumnya" title="Halaman Sebelumnya">
+                    <i class="fa-solid fa-chevron-left"></i>
+                  </a>
+                <?php else: ?>
+                  <span class="pagination-btn disabled" aria-disabled="true" title="Halaman Pertama">
+                    <i class="fa-solid fa-chevron-left"></i>
+                  </span>
+                <?php endif; ?>
+
+                <!-- Angka Halaman -->
+                <?php
+                  $startPage = max(1, $page - 2);
+                  $endPage   = min($totalPages, $page + 2);
+
+                  if ($startPage > 1) {
+                      echo '<a href="' . htmlspecialchars(filterUrl(['page' => 1]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">1</a>';
+                      if ($startPage > 2) {
+                          echo '<span class="pagination-ellipsis">&hellip;</span>';
+                      }
+                  }
+
+                  for ($p = $startPage; $p <= $endPage; $p++) {
+                      if ($p === $page) {
+                          echo '<span class="pagination-link active" aria-current="page">' . $p . '</span>';
+                      } else {
+                          echo '<a href="' . htmlspecialchars(filterUrl(['page' => $p]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $p . '</a>';
+                      }
+                  }
+
+                  if ($endPage < $totalPages) {
+                      if ($endPage < $totalPages - 1) {
+                          echo '<span class="pagination-ellipsis">&hellip;</span>';
+                      }
+                      echo '<a href="' . htmlspecialchars(filterUrl(['page' => $totalPages]), ENT_QUOTES, 'UTF-8') . '" class="pagination-link">' . $totalPages . '</a>';
+                  }
+                ?>
+
+                <!-- Tombol Selanjutnya (Next) -->
+                <?php if ($page < $totalPages): ?>
+                  <a href="<?php echo htmlspecialchars(filterUrl(['page' => $page + 1]), ENT_QUOTES, 'UTF-8'); ?>" class="pagination-btn" aria-label="Halaman Selanjutnya" title="Halaman Selanjutnya">
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </a>
+                <?php else: ?>
+                  <span class="pagination-btn disabled" aria-disabled="true" title="Halaman Terakhir">
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </span>
+                <?php endif; ?>
+              </nav>
+
+              <div class="pagination-summary">
+                Menampilkan <strong><?php echo ($offset + 1); ?> - <?php echo min($offset + $perPage, $totalRecords); ?></strong> dari <strong><?php echo $totalRecords; ?></strong> iklan
+              </div>
+            </div>
+          <?php endif; ?>
         <?php else: ?>
           <!-- State Kosong (Empty State) Saat Tidak Ada Iklan yang Cocok -->
           <div class="empty-state-box">

@@ -413,9 +413,6 @@
 
           <!-- Aksi Kontak Dinamis (WhatsApp & Telepon dari database) -->
           <div class="seller-actions">
-            <a href="<?php echo htmlspecialchars($waUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-block">
-              <i class="fa-brands fa-whatsapp"></i> Hubungi via WhatsApp
-            </a>
             <button type="button" class="btn btn-outline btn-block" id="btn-show-phone" data-phone="<?php echo htmlspecialchars($waDisplay, ENT_QUOTES, 'UTF-8'); ?>" data-phone-raw="<?php echo htmlspecialchars($sellerWa, ENT_QUOTES, 'UTF-8'); ?>">
               <i class="fa-solid fa-phone"></i> <span>Tampilkan Telepon</span>
             </button>

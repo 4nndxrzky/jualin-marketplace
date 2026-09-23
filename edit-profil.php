@@ -1,8 +1,8 @@
 <?php
-/**
+    /**
  * Halaman Edit Profil Pengguna (edit-profil.php)
  * OLX Clone - Codepolitan
- * 
+ *
  * Fitur:
  * 1. Autentikasi ketat (wajib login).
  * 2. Pembaruan data dasar: Nama Lengkap, Nomor WhatsApp, Email.
@@ -12,50 +12,50 @@
  * 6. Tampilan antarmuka modern, responsif, dan 100% bebas emoji.
  */
 
-session_start();
-require_once __DIR__ . '/koneksi.php';
+    session_start();
+    require_once __DIR__ . '/koneksi.php';
 
-// Proteksi Autentikasi: Wajib login
-if (!isset($_SESSION['user_id'])) {
+    // Proteksi Autentikasi: Wajib login
+    if (! isset($_SESSION['user_id'])) {
     $_SESSION['flash_error'] = "Silakan masuk ke akun Anda terlebih dahulu untuk mengedit profil.";
     header("Location: login.php");
     exit;
-}
+    }
 
-$userId = (int)$_SESSION['user_id'];
+    $userId = (int) $_SESSION['user_id'];
 
-// Ambil data user terkini dari database
-$stmtUser = $pdo->prepare("SELECT id, name, email, whatsapp, password, created_at FROM users WHERE id = ? LIMIT 1");
-$stmtUser->execute([$userId]);
-$currentUser = $stmtUser->fetch();
+    // Ambil data user terkini dari database
+    $stmtUser = $pdo->prepare("SELECT id, name, email, whatsapp, password, created_at FROM users WHERE id = ? LIMIT 1");
+    $stmtUser->execute([$userId]);
+    $currentUser = $stmtUser->fetch();
 
-if (!$currentUser) {
+    if (! $currentUser) {
     session_destroy();
     header("Location: login.php");
     exit;
-}
+    }
 
-// Hitung total iklan aktif yang dimiliki user
-$stmtAds = $pdo->prepare("SELECT COUNT(*) FROM ads WHERE user_id = ?");
-$stmtAds->execute([$userId]);
-$totalUserAds = (int)$stmtAds->fetchColumn();
+    // Hitung total iklan aktif yang dimiliki user
+    $stmtAds = $pdo->prepare("SELECT COUNT(*) FROM ads WHERE user_id = ?");
+    $stmtAds->execute([$userId]);
+    $totalUserAds = (int) $stmtAds->fetchColumn();
 
-// Ambil lokasi unik untuk selector lokasi di header
-$stmtLoc = $pdo->query("SELECT DISTINCT location FROM ads WHERE location IS NOT NULL AND TRIM(location) != '' ORDER BY location ASC");
-$locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
+    // Ambil lokasi unik untuk selector lokasi di header
+    $stmtLoc   = $pdo->query("SELECT DISTINCT location FROM ads WHERE location IS NOT NULL AND TRIM(location) != '' ORDER BY location ASC");
+    $locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
 
-// Flash messages
-$flashSuccess = $_SESSION['flash_success'] ?? null;
-$flashError   = $_SESSION['flash_error'] ?? null;
-unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+    // Flash messages
+    $flashSuccess = $_SESSION['flash_success'] ?? null;
+    $flashError   = $_SESSION['flash_error'] ?? null;
+    unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
-$errors = [];
-$name     = $currentUser['name'];
-$email    = $currentUser['email'];
-$whatsapp = $currentUser['whatsapp'] ?? '';
+    $errors   = [];
+    $name     = $currentUser['name'];
+    $email    = $currentUser['email'];
+    $whatsapp = $currentUser['whatsapp'] ?? '';
 
-// Proses Pembaruan Profil (POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Proses Pembaruan Profil (POST)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name            = trim($_POST['name'] ?? '');
     $email           = trim($_POST['email'] ?? '');
     $whatsapp        = trim($_POST['whatsapp'] ?? '');
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 2. Validasi Email
     if (empty($email)) {
         $errors[] = "Alamat email wajib diisi.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    } elseif (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Format alamat email tidak valid.";
     } elseif (mb_strlen($email) > 100) {
         $errors[] = "Alamat email maksimal 100 karakter.";
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 3. Validasi WhatsApp (Opsional, tapi jika diisi dicek formatnya)
-    if (!empty($whatsapp)) {
+    if (! empty($whatsapp)) {
         // Bersihkan karakter selain angka dan tanda plus
         $cleanPhone = preg_replace('/[^0-9+]/', '', $whatsapp);
         if (strlen($cleanPhone) < 8 || strlen($cleanPhone) > 20) {
@@ -100,12 +100,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 4. Validasi Ganti Kata Sandi (Opsional)
-    $wantsPasswordChange = (!empty($currentPassword) || !empty($newPassword) || !empty($confirmPassword));
+    $wantsPasswordChange = (! empty($currentPassword) || ! empty($newPassword) || ! empty($confirmPassword));
 
     if ($wantsPasswordChange) {
         if (empty($currentPassword)) {
             $errors[] = "Kata sandi saat ini wajib diisi untuk mengonfirmasi perubahan kata sandi.";
-        } elseif (!password_verify($currentPassword, $currentUser['password'])) {
+        } elseif (! password_verify($currentPassword, $currentUser['password'])) {
             $errors[] = "Kata sandi saat ini yang Anda masukkan salah.";
         }
 
@@ -125,15 +125,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             if ($wantsPasswordChange) {
                 $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-                $updateStmt = $pdo->prepare("
-                    UPDATE users 
+                $updateStmt     = $pdo->prepare("
+                    UPDATE users
                     SET name = ?, email = ?, whatsapp = ?, password = ?
                     WHERE id = ?
                 ");
                 $updateStmt->execute([$name, $email, $whatsapp, $hashedPassword, $userId]);
             } else {
                 $updateStmt = $pdo->prepare("
-                    UPDATE users 
+                    UPDATE users
                     SET name = ?, email = ?, whatsapp = ?
                     WHERE id = ?
                 ");
@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = "Terjadi kesalahan pada database: " . $e->getMessage();
         }
     }
-}
+    }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -310,7 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <!-- Notifikasi Error Validasi -->
-        <?php if (!empty($errors)): ?>
+        <?php if (! empty($errors)): ?>
           <div class="alert alert-danger" role="alert">
             <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
             <div class="alert-content">
@@ -542,3 +542,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 
 </html>
+
