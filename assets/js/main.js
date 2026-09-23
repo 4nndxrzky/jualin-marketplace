@@ -347,7 +347,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const isOpen = categoryNavExpanded.classList.toggle("show");
       categoryMoreBtn.classList.toggle("active", isOpen);
       categoryMoreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-      categoryNavExpanded.setAttribute("aria-hidden", isOpen ? "false" : "true");
+      categoryNavExpanded.setAttribute(
+        "aria-hidden",
+        isOpen ? "false" : "true",
+      );
 
       if (moreTextSpan) {
         moreTextSpan.textContent = isOpen ? "Tutup" : "Lainnya";

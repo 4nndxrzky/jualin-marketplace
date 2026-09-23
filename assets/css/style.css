@@ -478,7 +478,10 @@ button {
   max-height: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.3s ease;
+  transition:
+    max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease,
+    margin 0.3s ease;
   margin-top: 0;
 }
 
@@ -2374,4 +2377,299 @@ select.form-control {
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+}
+
+/* ==========================================================================
+   14. IKLAN SAYA (MY ADS) & EDIT IKLAN STYLES
+   ========================================================================== */
+.my-ads-layout {
+  padding: 30px 0 50px;
+}
+
+.my-ads-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.my-ads-title-box h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.my-ads-title-box p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.my-ads-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.my-ads-stat-card {
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.my-ads-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(35, 229, 219, 0.15);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.my-ads-stat-icon.green {
+  background-color: #e6f9f0;
+  color: var(--success);
+}
+
+.my-ads-stat-info h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.my-ads-stat-info p {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.my-ads-card {
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.my-ads-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.my-ad-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gray-200);
+  transition: background-color var(--transition);
+}
+
+.my-ad-item:last-child {
+  border-bottom: none;
+}
+
+.my-ad-item:hover {
+  background-color: var(--gray-50);
+}
+
+.my-ad-main-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.my-ad-thumb {
+  width: 90px;
+  height: 90px;
+  border-radius: var(--radius-md);
+  background-color: var(--gray-100);
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--gray-200);
+}
+
+.my-ad-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.my-ad-thumb .placeholder-icon {
+  font-size: 1.8rem;
+  color: var(--text-muted);
+}
+
+.my-ad-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.my-ad-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.my-ad-title:hover {
+  color: var(--accent-hover);
+}
+
+.my-ad-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.my-ad-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.my-ad-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.my-ad-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-edit-outline {
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  background-color: var(--white);
+  transition: all var(--transition);
+}
+
+.btn-edit-outline:hover {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.btn-danger-outline {
+  border: 1.5px solid #feb2b2;
+  color: var(--danger);
+  background-color: var(--white);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-danger-outline:hover {
+  background-color: #fff5f5;
+  border-color: var(--danger);
+}
+
+/* Edit Existing Photos Management */
+.existing-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.existing-photo-item {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1.5px solid var(--gray-200);
+}
+
+.existing-photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.existing-photo-delete-label {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(197, 48, 48, 0.75);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity var(--transition);
+  text-align: center;
+  padding: 4px;
+}
+
+.existing-photo-item:hover .existing-photo-delete-label,
+.existing-photo-item:has(input[type="checkbox"]:checked) .existing-photo-delete-label {
+  opacity: 1;
+}
+
+.existing-photo-item:has(input[type="checkbox"]:checked) {
+  border-color: var(--danger);
+}
+
+.existing-photo-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--danger);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .my-ad-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .my-ad-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px dashed var(--gray-200);
+  }
 }

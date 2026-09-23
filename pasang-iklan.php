@@ -304,6 +304,10 @@
                 <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></strong>
                 <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?></small>
               </div>
+              <a href="iklan-saya.php" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-box-open"></i> Iklan Saya
+              </a>
+              <div class="dropdown-divider"></div>
               <a href="logout.php" class="dropdown-item danger-item" role="menuitem">
                 <i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)
               </a>
