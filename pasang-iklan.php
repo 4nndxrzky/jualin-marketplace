@@ -25,10 +25,10 @@
     $stmtUser = $pdo->prepare("SELECT id, name, email, whatsapp FROM users WHERE id = ? LIMIT 1");
     $stmtUser->execute([$_SESSION['user_id']]);
     $currentUser = $stmtUser->fetch() ?: [
-        'id'       => (int) $_SESSION['user_id'],
-        'name'     => $_SESSION['user_name'] ?? 'Pengguna',
-        'email'    => $_SESSION['user_email'] ?? '',
-        'whatsapp' => null,
+    'id'       => (int) $_SESSION['user_id'],
+    'name'     => $_SESSION['user_name'] ?? 'Pengguna',
+    'email'    => $_SESSION['user_email'] ?? '',
+    'whatsapp' => null,
     ];
 
     // Ambil data kategori secara dinamis dari tabel categories
@@ -284,7 +284,7 @@
         <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
           OLX<span>Clone</span>
         </a>
-        
+
         <!-- Auth Action Navigasi -->
         <div class="header-actions">
           <a href="index.php" class="btn btn-outline" aria-label="Kembali ke beranda">
