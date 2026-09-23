@@ -12,14 +12,14 @@ session_start();
 require_once __DIR__ . '/koneksi.php';
 
 // Proteksi Autentikasi: Wajib login
-if (!isset($_SESSION['user_id'])) {
+if (! isset($_SESSION['user_id'])) {
     $_SESSION['flash_error'] = "Silakan masuk ke akun Anda terlebih dahulu.";
     header("Location: login.php");
     exit;
 }
 
-$userId = (int)$_SESSION['user_id'];
-$adId   = (int)($_POST['id'] ?? $_GET['id'] ?? 0);
+$userId = (int) $_SESSION['user_id'];
+$adId   = (int) ($_POST['id'] ?? $_GET['id'] ?? 0);
 
 if ($adId <= 0) {
     $_SESSION['flash_error'] = "ID iklan tidak valid.";
@@ -32,7 +32,7 @@ $stmt = $pdo->prepare("SELECT id, title FROM ads WHERE id = ? AND user_id = ? LI
 $stmt->execute([$adId, $userId]);
 $ad = $stmt->fetch();
 
-if (!$ad) {
+if (! $ad) {
     $_SESSION['flash_error'] = "Iklan tidak ditemukan atau Anda tidak memiliki hak akses untuk menghapus iklan tersebut.";
     header("Location: iklan-saya.php");
     exit;
@@ -58,7 +58,7 @@ try {
 
     // 3. Bersihkan file fisik foto di folder uploads/ads/ setelah database berhasil dihapus
     foreach ($images as $imgPath) {
-        if (!empty($imgPath)) {
+        if (! empty($imgPath)) {
             $filePath = __DIR__ . '/' . $imgPath;
             if (file_exists($filePath) && is_file($filePath)) {
                 @unlink($filePath);

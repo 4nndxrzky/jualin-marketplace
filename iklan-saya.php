@@ -1,25 +1,25 @@
 <?php
-session_start();
-require_once __DIR__ . '/koneksi.php';
+    session_start();
+    require_once __DIR__ . '/koneksi.php';
 
-// Proteksi Autentikasi: Wajib login untuk mengakses Iklan Saya
-if (!isset($_SESSION['user_id'])) {
+    // Proteksi Autentikasi: Wajib login untuk mengakses Iklan Saya
+    if (! isset($_SESSION['user_id'])) {
     $_SESSION['flash_error'] = "Silakan masuk ke akun Anda terlebih dahulu untuk mengelola iklan.";
     header("Location: login.php");
     exit;
-}
+    }
 
-$userId    = (int)$_SESSION['user_id'];
-$userName  = $_SESSION['user_name'] ?? 'Pengguna';
-$userEmail = $_SESSION['user_email'] ?? '';
+    $userId    = (int) $_SESSION['user_id'];
+    $userName  = $_SESSION['user_name'] ?? 'Pengguna';
+    $userEmail = $_SESSION['user_email'] ?? '';
 
-// Flash message
-$flashSuccess = $_SESSION['flash_success'] ?? null;
-$flashError   = $_SESSION['flash_error'] ?? null;
-unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+    // Flash message
+    $flashSuccess = $_SESSION['flash_success'] ?? null;
+    $flashError   = $_SESSION['flash_error'] ?? null;
+    unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
-// Query seluruh iklan yang diposting oleh pengguna ini
-$stmt = $pdo->prepare("
+    // Query seluruh iklan yang diposting oleh pengguna ini
+    $stmt = $pdo->prepare("
     SELECT a.*, c.name AS category_name, c.icon AS category_icon,
            (SELECT image_path FROM ad_images WHERE ad_id = a.id ORDER BY id ASC LIMIT 1) AS primary_image,
            (SELECT COUNT(*) FROM ad_images WHERE ad_id = a.id) AS total_images
@@ -28,24 +28,24 @@ $stmt = $pdo->prepare("
     WHERE a.user_id = ?
     ORDER BY a.created_at DESC
 ");
-$stmt->execute([$userId]);
-$myAds = $stmt->fetchAll();
+    $stmt->execute([$userId]);
+    $myAds = $stmt->fetchAll();
 
-$totalAds   = count($myAds);
-$totalValue = array_sum(array_column($myAds, 'price'));
+    $totalAds   = count($myAds);
+    $totalValue = array_sum(array_column($myAds, 'price'));
 
-// Ambil daftar lokasi unik untuk header
-$stmtLoc = $pdo->query("
-    SELECT DISTINCT location 
-    FROM ads 
-    WHERE location IS NOT NULL AND TRIM(location) != '' 
+    // Ambil daftar lokasi unik untuk header
+    $stmtLoc = $pdo->query("
+    SELECT DISTINCT location
+    FROM ads
+    WHERE location IS NOT NULL AND TRIM(location) != ''
     ORDER BY location ASC
 ");
-$locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
+    $locations = $stmtLoc->fetchAll(PDO::FETCH_COLUMN);
 
-// Ambil kategori untuk footer
-$stmtCat    = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
-$categories = $stmtCat->fetchAll();
+    // Ambil kategori untuk footer
+    $stmtCat    = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
+    $categories = $stmtCat->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -126,6 +126,9 @@ $categories = $stmtCat->fetchAll();
                 <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?></strong>
                 <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($userEmail, ENT_QUOTES, 'UTF-8'); ?></small>
               </div>
+              <a href="edit-profil.php" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-user-pen"></i> Edit Profil
+              </a>
               <a href="iklan-saya.php" class="dropdown-item" role="menuitem" style="color: var(--primary); font-weight: 700; background-color: var(--gray-100);">
                 <i class="fa-solid fa-box-open"></i> Iklan Saya
               </a>
@@ -164,7 +167,7 @@ $categories = $stmtCat->fetchAll();
   <main id="main-content" class="container my-ads-layout" role="main">
 
     <!-- Flash Notifications -->
-    <?php if (!empty($flashSuccess)): ?>
+    <?php if (! empty($flashSuccess)): ?>
       <div class="alert alert-success" role="alert">
         <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
         <div class="alert-content"><?php echo htmlspecialchars($flashSuccess, ENT_QUOTES, 'UTF-8'); ?></div>
@@ -172,7 +175,7 @@ $categories = $stmtCat->fetchAll();
       </div>
     <?php endif; ?>
 
-    <?php if (!empty($flashError)): ?>
+    <?php if (! empty($flashError)): ?>
       <div class="alert alert-danger" role="alert">
         <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-exclamation"></i></span>
         <div class="alert-content"><?php echo htmlspecialchars($flashError, ENT_QUOTES, 'UTF-8'); ?></div>
@@ -233,16 +236,16 @@ $categories = $stmtCat->fetchAll();
               <div class="my-ad-main-info">
                 <!-- Thumbnail Foto -->
                 <div class="my-ad-thumb">
-                  <?php if (!empty($ad['primary_image']) && file_exists(__DIR__ . '/' . $ad['primary_image'])): ?>
+                  <?php if (! empty($ad['primary_image']) && file_exists(__DIR__ . '/' . $ad['primary_image'])): ?>
                     <img src="<?php echo htmlspecialchars($ad['primary_image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?>">
                   <?php else: ?>
-                    <i class="<?php echo !empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open'; ?> placeholder-icon"></i>
+                    <i class="<?php echo ! empty($ad['category_icon']) ? htmlspecialchars($ad['category_icon']) : 'fa-solid fa-box-open'; ?> placeholder-icon"></i>
                   <?php endif; ?>
                 </div>
 
                 <!-- Informasi Iklan -->
                 <div class="my-ad-details">
-                  <a href="detail.php?id=<?php echo (int)$ad['id']; ?>" class="my-ad-title">
+                  <a href="detail.php?id=<?php echo (int) $ad['id']; ?>" class="my-ad-title">
                     <?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?>
                   </a>
                   <p class="my-ad-price">Rp <?php echo number_format($ad['price'], 0, ',', '.'); ?></p>
@@ -261,7 +264,7 @@ $categories = $stmtCat->fetchAll();
                     </span>
                     <span>
                       <i class="fa-solid fa-camera"></i>
-                      <?php echo (int)$ad['total_images']; ?> Foto
+                      <?php echo (int) $ad['total_images']; ?> Foto
                     </span>
                     <span class="badge badge-verified" style="font-size: 0.7rem; padding: 2px 6px;">
                       Aktif
@@ -272,13 +275,13 @@ $categories = $stmtCat->fetchAll();
 
               <!-- Aksi Cepat (Lihat, Edit, Hapus) -->
               <div class="my-ad-actions">
-                <a href="detail.php?id=<?php echo (int)$ad['id']; ?>" class="btn btn-sm btn-outline" title="Lihat tampilan iklan">
+                <a href="detail.php?id=<?php echo (int) $ad['id']; ?>" class="btn btn-sm btn-outline" title="Lihat tampilan iklan">
                   <i class="fa-solid fa-eye"></i> Lihat
                 </a>
-                <a href="edit-iklan.php?id=<?php echo (int)$ad['id']; ?>" class="btn btn-sm btn-edit-outline" title="Ubah informasi iklan">
+                <a href="edit-iklan.php?id=<?php echo (int) $ad['id']; ?>" class="btn btn-sm btn-edit-outline" title="Ubah informasi iklan">
                   <i class="fa-solid fa-pen-to-square"></i> Edit
                 </a>
-                <a href="hapus-iklan.php?id=<?php echo (int)$ad['id']; ?>" class="btn btn-sm btn-danger-outline" onclick="return confirm('Apakah Anda yakin ingin menghapus iklan \'<?php echo htmlspecialchars(addslashes($ad['title']), ENT_QUOTES, 'UTF-8'); ?>\'? Seluruh foto dan data iklan ini akan dihapus secara permanen.');" title="Hapus iklan ini">
+                <a href="hapus-iklan.php?id=<?php echo (int) $ad['id']; ?>" class="btn btn-sm btn-danger-outline" onclick="return confirm('Apakah Anda yakin ingin menghapus iklan \'<?php echo htmlspecialchars(addslashes($ad['title']), ENT_QUOTES, 'UTF-8'); ?>\'? Seluruh foto dan data iklan ini akan dihapus secara permanen.');" title="Hapus iklan ini">
                   <i class="fa-solid fa-trash-can"></i> Hapus
                 </a>
               </div>
@@ -332,7 +335,7 @@ $categories = $stmtCat->fetchAll();
           <ul>
             <?php foreach (array_slice($categories, 0, 4) as $popularCat): ?>
               <li>
-                <a href="index.php?c=<?php echo (int)$popularCat['id']; ?>">
+                <a href="index.php?c=<?php echo (int) $popularCat['id']; ?>">
                   <?php echo htmlspecialchars($popularCat['name'], ENT_QUOTES, 'UTF-8'); ?>
                 </a>
               </li>
@@ -382,3 +385,4 @@ $categories = $stmtCat->fetchAll();
 </body>
 
 </html>
+

@@ -304,6 +304,9 @@
                 <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($currentUser['name'], ENT_QUOTES, 'UTF-8') ?></strong>
                 <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($currentUser['email'], ENT_QUOTES, 'UTF-8') ?></small>
               </div>
+              <a href="edit-profil.php" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-user-pen"></i> Edit Profil
+              </a>
               <a href="iklan-saya.php" class="dropdown-item" role="menuitem">
                 <i class="fa-solid fa-box-open"></i> Iklan Saya
               </a>
@@ -383,7 +386,7 @@
                 <select name="category_id" id="category_id" class="form-control" required aria-required="true">
                   <option value="" disabled <?php echo empty($category_id) ? 'selected' : '' ?>>-- Pilih Kategori Barang --</option>
                   <?php foreach ($categories as $cat): ?>
-                    <option value="<?php echo (int) $cat['id'] ?>" <?php echo ((string) $category_id === (string) $cat['id']) ? 'selected' : '' ?>>
+                    <option value="<?php echo (int) $cat['id'] ?>" <?php echo((string) $category_id === (string) $cat['id']) ? 'selected' : '' ?>>
                       <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8') ?>
                     </option>
                   <?php endforeach; ?>

@@ -201,6 +201,9 @@
                   <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8'); ?></strong>
                   <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($_SESSION['user_email'], ENT_QUOTES, 'UTF-8'); ?></small>
                 </div>
+                <a href="edit-profil.php" class="dropdown-item" role="menuitem">
+                  <i class="fa-solid fa-user-pen"></i> Edit Profil
+                </a>
                 <a href="iklan-saya.php" class="dropdown-item" role="menuitem">
                   <i class="fa-solid fa-box-open"></i> Iklan Saya
                 </a>

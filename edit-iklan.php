@@ -1,4 +1,17 @@
 <?php
+/**
+ * Halaman Edit Iklan (edit-iklan.php)
+ * OLX Clone - Codepolitan
+ * 
+ * Fitur:
+ * 1. Proteksi Autentikasi ketat (wajib login).
+ * 2. Otorisasi Kepemilikan (hanya pemilik listing yang berhak mengedit).
+ * 3. Selaras 100% dengan struktur form dan kartu pada pasang-iklan.php.
+ * 4. Pengelolaan foto tersimpan (opsi hapus berkas fisik uploads/ads/ secara bersih).
+ * 5. Unggah foto baru tambahan (maksimal total akumulasi 5 foto).
+ * 6. Transaksi database PDO untuk menjamin integritas ads & ad_images.
+ */
+
 session_start();
 require_once __DIR__ . '/koneksi.php';
 
@@ -24,6 +37,11 @@ if (!$ad) {
     header("Location: iklan-saya.php");
     exit;
 }
+
+// Ambil data user aktif untuk kartu profil penjual
+$stmtUser = $pdo->prepare("SELECT id, name, email FROM users WHERE id = ? LIMIT 1");
+$stmtUser->execute([$userId]);
+$currentUser = $stmtUser->fetch();
 
 // Ambil data kategori
 $stmtCategories = $pdo->query("SELECT id, name, icon FROM categories ORDER BY id ASC");
@@ -112,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Hitung estimasi sisa foto
         $remainingExisting = count($existingImages) - count($deleteImages);
         if (($remainingExisting + $totalNew) > 5) {
-            $errors[] = "Total foto setelah diunggah tidak boleh melebihi 5 foto.";
+            $errors[] = "Total akumulasi foto setelah disimpan tidak boleh melebihi 5 foto.";
         }
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -232,7 +250,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <!-- ==================== SEO META TAGS ==================== -->
   <title>Edit Iklan: <?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?> — OLX Clone</title>
-  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Perbarui rincian, foto, harga, dan lokasi iklan Anda di OLX Clone.">
+  <meta name="robots" content="noindex, follow">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -249,7 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
   <!-- ================================================================
-       HEADER
+       HEADER — Logo, Lokasi, Search, Auth
        ================================================================ -->
   <header class="site-header" role="banner">
     <div class="container">
@@ -280,13 +299,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- Search Bar -->
-        <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+        <form class="search-bar" action="index.php" method="GET" role="search">
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
 
-        <!-- Auth Actions -->
+        <!-- Auth Header Actions -->
         <div class="header-actions">
           <div class="user-menu-wrapper">
             <button type="button" class="user-menu-btn" aria-haspopup="true" aria-expanded="false">
@@ -299,6 +317,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);"><?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?></strong>
                 <small style="color: var(--text-muted); font-size: 0.75rem;"><?php echo htmlspecialchars($userEmail, ENT_QUOTES, 'UTF-8'); ?></small>
               </div>
+              <a href="edit-profil.php" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-user-pen"></i> Edit Profil
+              </a>
               <a href="iklan-saya.php" class="dropdown-item" role="menuitem">
                 <i class="fa-solid fa-box-open"></i> Iklan Saya
               </a>
@@ -333,192 +354,321 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
   <!-- ================================================================
-       KONTEN FORM EDIT IKLAN
+       KONTEN UTAMA: FORM EDIT IKLAN (SELARAS DENGAN PASANG-IKLAN.PHP)
        ================================================================ -->
-  <main id="main-content" class="container post-ad-layout" role="main">
+  <main class="container" id="main-content" role="main">
+    <div class="post-ad-layout">
 
-    <div class="post-ad-main">
+      <!-- ==================== KOLOM KIRI: FORM EDIT IKLAN ==================== -->
+      <div class="post-ad-main">
 
-      <!-- Header Judul -->
-      <div class="post-ad-header">
-        <h1>Edit Iklan</h1>
-        <p>Perbarui rincian, foto, harga, atau lokasi untuk listing #<?php echo str_pad((string)$adId, 5, '0', STR_PAD_LEFT); ?>.</p>
+        <!-- Banner Header Form -->
+        <div class="post-ad-header">
+          <h1>Edit Iklan Listing</h1>
+          <p>Perbarui rincian, foto, harga, atau lokasi untuk iklan #<?php echo str_pad((string)$adId, 5, '0', STR_PAD_LEFT); ?> di bawah ini.</p>
+        </div>
+
+        <!-- NOTIFIKASI ERROR JIKA ADA -->
+        <?php if (!empty($errors)): ?>
+          <div class="alert alert-danger" role="alert" style="margin-bottom: 24px;">
+            <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <div class="alert-content">
+              <strong>Gagal Memperbarui Iklan:</strong>
+              <ul style="margin: 6px 0 0 16px; list-style: disc;">
+                <?php foreach ($errors as $err): ?>
+                  <li><?php echo htmlspecialchars($err, ENT_QUOTES, 'UTF-8'); ?></li>
+                <?php endforeach; ?>
+              </ul>
+            </div>
+            <button type="button" class="alert-close" aria-label="Tutup notifikasi">&times;</button>
+          </div>
+        <?php endif; ?>
+
+        <!-- FORM UTAMA DENGAN ENCTYPE MULTIPART -->
+        <form class="post-ad-form" action="edit-iklan.php?id=<?php echo (int)$adId; ?>" method="POST" enctype="multipart/form-data">
+
+          <!-- ==================== CARD 1: PILIH KATEGORI (Selaras dengan pasang-iklan.php) ==================== -->
+          <section class="post-ad-card" aria-labelledby="heading-cat">
+            <h2 id="heading-cat" class="post-ad-card-title">
+              <i class="fa-solid fa-tags" aria-hidden="true"></i> 1. Pilih Kategori Iklan
+            </h2>
+            <p class="form-hint" style="margin-bottom: 14px;">
+              Pilih kategori yang paling sesuai dengan barang atau jasa yang Anda iklankan.
+            </p>
+
+            <div class="form-group">
+              <label for="category_id" class="form-label">Kategori Barang *</label>
+              <div class="input-wrapper">
+                <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-list"></i></span>
+                <select name="category_id" id="category_id" class="form-control" required aria-required="true">
+                  <option value="" disabled>-- Pilih Kategori Barang --</option>
+                  <?php foreach ($categories as $cat): ?>
+                    <option value="<?php echo (int)$cat['id']; ?>" <?php echo ((int)$category_id === (int)$cat['id']) ? 'selected' : ''; ?>>
+                      <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <span class="form-hint">Klik dropdown di atas untuk memilih kategori yang sesuai dengan barang Anda.</span>
+            </div>
+          </section>
+
+
+          <!-- ==================== CARD 2: PENGELOLAAN FOTO (Selaras dengan pasang-iklan.php) ==================== -->
+          <section class="post-ad-card" aria-labelledby="heading-photos">
+            <h2 id="heading-photos" class="post-ad-card-title">
+              <i class="fa-solid fa-camera" aria-hidden="true"></i> 2. Unggah Foto Barang (Maks. 5 Foto)
+            </h2>
+
+            <!-- Foto yang Tersimpan di Database -->
+            <?php if (!empty($existingImages)): ?>
+              <div style="margin-bottom: 22px;">
+                <label class="form-label" style="display: flex; align-items: center; justify-content: space-between;">
+                  <span>Foto yang Tersimpan (<?php echo count($existingImages); ?> Foto)</span>
+                  <span style="font-size: 0.8rem; color: var(--danger); font-weight: normal;">
+                    <i class="fa-solid fa-trash-can"></i> Centang foto yang ingin dihapus
+                  </span>
+                </label>
+                <div class="existing-photos-grid">
+                  <?php foreach ($existingImages as $img): ?>
+                    <div class="existing-photo-item">
+                      <img src="<?php echo htmlspecialchars($img['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="Foto Listing">
+                      <label class="existing-photo-delete-label">
+                        <input type="checkbox" name="delete_images[]" value="<?php echo (int)$img['id']; ?>">
+                        <span><i class="fa-solid fa-trash-can"></i> Hapus Foto</span>
+                      </label>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            <?php endif; ?>
+
+            <!-- Dropzone Upload Foto Baru Tambahan -->
+            <label class="photo-upload-zone" for="ad-images-input">
+              <span class="photo-upload-icon" aria-hidden="true"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+              <span class="photo-upload-text">Klik di sini untuk memilih foto baru atau seret foto ke sini</span>
+              <span class="photo-upload-subtext">Format: JPG, JPEG, PNG, atau WebP (Maksimal 5MB per foto, akumulasi maksimal 5 foto)</span>
+              <input
+                type="file"
+                id="ad-images-input"
+                name="images[]"
+                multiple
+                accept="image/jpeg, image/png, image/webp"
+                aria-describedby="photo-rules-text">
+            </label>
+
+            <span id="photo-rules-text" class="form-hint" style="margin-top: 10px; display: block;">
+              <i class="fa-solid fa-lightbulb" style="color: var(--accent);"></i> <strong>Tips:</strong> Foto pertama akan otomatis menjadi foto sampul utama pada halaman pencarian.
+            </span>
+
+            <!-- Slot Pratinjau Foto Baru -->
+            <div class="photo-slots-grid" aria-label="Slot Foto Baru">
+              <div class="photo-slot primary-slot" title="Foto Baru 1">
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
+                <span>Foto 1</span>
+              </div>
+              <div class="photo-slot" title="Foto Baru 2">
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
+                <span>Foto 2</span>
+              </div>
+              <div class="photo-slot" title="Foto Baru 3">
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
+                <span>Foto 3</span>
+              </div>
+              <div class="photo-slot" title="Foto Baru 4">
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
+                <span>Foto 4</span>
+              </div>
+              <div class="photo-slot" title="Foto Baru 5">
+                <i class="fa-solid fa-image" aria-hidden="true"></i>
+                <span>Foto 5</span>
+              </div>
+            </div>
+          </section>
+
+
+          <!-- ==================== CARD 3: DETAIL IKLAN (Selaras dengan pasang-iklan.php) ==================== -->
+          <section class="post-ad-card" aria-labelledby="heading-info">
+            <h2 id="heading-info" class="post-ad-card-title">
+              <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> 3. Detail & Informasi Iklan
+            </h2>
+
+            <!-- Judul Iklan (ads.title - VARCHAR 50) -->
+            <div class="form-group" style="margin-bottom: 20px;">
+              <div class="char-counter-row">
+                <label for="title" class="form-label">Judul Iklan *</label>
+                <span id="title-counter" class="char-count"><?php echo mb_strlen($title); ?> / 50 karakter</span>
+              </div>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                class="form-control"
+                style="padding-left: 14px;"
+                placeholder="Contoh: Toyota Avanza 1.3 G MT 2020 Putih Mulus"
+                required
+                maxlength="50"
+                value="<?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?>"
+                aria-required="true">
+              <span class="form-hint">Maksimal 50 karakter. Tulis merek, tipe, atau fitur unggulan barang Anda.</span>
+            </div>
+
+            <!-- Deskripsi Iklan (ads.description - TEXT) -->
+            <div class="form-group">
+              <label for="description" class="form-label">Deskripsi Lengkap *</label>
+              <textarea
+                id="description"
+                name="description"
+                class="form-control"
+                style="padding-left: 14px; min-height: 160px; resize: vertical;"
+                placeholder="Jelaskan kondisi barang secara jujur, kelengkapan aksesori, riwayat servis/pemakaian, alasan dijual, dan informasi penting lainnya..."
+                required
+                rows="6"
+                aria-required="true"><?php echo htmlspecialchars($description, ENT_QUOTES, 'UTF-8'); ?></textarea>
+              <span class="form-hint">Iklan dengan deskripsi detail mendapatkan respons pembeli 3x lebih banyak.</span>
+            </div>
+          </section>
+
+
+          <!-- ==================== CARD 4: TENTUKAN HARGA (Selaras dengan pasang-iklan.php) ==================== -->
+          <section class="post-ad-card" aria-labelledby="heading-price">
+            <h2 id="heading-price" class="post-ad-card-title">
+              <i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i> 4. Tentukan Harga
+            </h2>
+
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="price" class="form-label">Harga Barang (Rp) *</label>
+              <div class="price-input-wrapper">
+                <span class="price-prefix" aria-hidden="true">Rp</span>
+                <input
+                  type="number"
+                  id="price"
+                  name="price"
+                  placeholder="0"
+                  min="0"
+                  step="1000"
+                  required
+                  value="<?php echo htmlspecialchars((string)(int)$price, ENT_QUOTES, 'UTF-8'); ?>"
+                  aria-required="true">
+              </div>
+              <span class="form-hint">Tuliskan nominal angka saja tanpa titik atau koma (contoh: 185000000).</span>
+            </div>
+          </section>
+
+
+          <!-- ==================== CARD 5: LOKASI BARANG (Selaras dengan pasang-iklan.php) ==================== -->
+          <section class="post-ad-card" aria-labelledby="heading-location">
+            <h2 id="heading-location" class="post-ad-card-title">
+              <i class="fa-solid fa-location-dot" aria-hidden="true"></i> 5. Lokasi Barang
+            </h2>
+
+            <div class="form-group">
+              <label for="location" class="form-label">Kota / Wilayah *</label>
+              <div class="input-wrapper">
+                <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  class="form-control"
+                  placeholder="Contoh: Jakarta Selatan, Cilandak"
+                  required
+                  maxlength="100"
+                  value="<?php echo htmlspecialchars($location, ENT_QUOTES, 'UTF-8'); ?>"
+                  aria-required="true">
+              </div>
+              <span class="form-hint">Cantumkan nama kota dan kecamatan agar calon pembeli terdekat mudah menemukan iklan Anda.</span>
+            </div>
+          </section>
+
+
+          <!-- ==================== CARD 6: PROFIL PENJUAL (Selaras dengan pasang-iklan.php) ==================== -->
+          <section class="post-ad-card" aria-labelledby="heading-seller">
+            <h2 id="heading-seller" class="post-ad-card-title">
+              <i class="fa-solid fa-user" aria-hidden="true"></i> 6. Profil Penjual
+            </h2>
+
+            <div style="display: flex; align-items: center; gap: 14px; background-color: var(--gray-50); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--gray-200);">
+              <div class="seller-avatar" style="width: 44px; height: 44px; font-size: 1.1rem;" aria-hidden="true">
+                <?php echo strtoupper(substr($currentUser['name'] ?? $userName, 0, 1)); ?>
+              </div>
+              <div>
+                <p style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><?php echo htmlspecialchars($currentUser['name'] ?? $userName, ENT_QUOTES, 'UTF-8'); ?></p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);"><?php echo htmlspecialchars($currentUser['email'] ?? $userEmail, ENT_QUOTES, 'UTF-8'); ?> • Akun Terverifikasi</p>
+              </div>
+            </div>
+            <span class="form-hint" style="margin-top: 8px; display: block;">
+              Iklan ini dikelola menggunakan akun Anda yang sedang aktif.
+            </span>
+          </section>
+
+
+          <!-- ==================== SUBMIT SECTION ==================== -->
+          <div class="post-ad-card" style="display: flex; align-items: center; justify-content: flex-end; gap: 14px;">
+            <a href="iklan-saya.php" class="btn btn-outline" style="padding: 12px 24px;">
+              <i class="fa-solid fa-xmark"></i> Batal
+            </a>
+            <button type="submit" class="btn btn-solid-primary" style="padding: 12px 28px; font-size: 1rem;">
+              <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+            </button>
+          </div>
+
+        </form>
+
       </div>
 
-      <!-- Pesan Kesalahan / Error -->
-      <?php if (!empty($errors)): ?>
-        <div class="alert alert-danger" role="alert">
-          <span class="alert-icon" aria-hidden="true"><i class="fa-solid fa-circle-exclamation"></i></span>
-          <div class="alert-content">
-            <strong>Mohon perbaiki kesalahan berikut:</strong>
-            <ul style="margin-top: 6px; padding-left: 18px;">
-              <?php foreach ($errors as $err): ?>
-                <li><?php echo htmlspecialchars($err, ENT_QUOTES, 'UTF-8'); ?></li>
-              <?php endforeach; ?>
-            </ul>
+
+      <!-- ==================== KOLOM KANAN: SIDEBAR PANDUAN ==================== -->
+      <aside class="post-ad-sidebar" aria-label="Panduan Edit Iklan">
+
+        <!-- Card Tips Edit Iklan -->
+        <div class="tips-card">
+          <div class="tips-card-header">
+            <i class="fa-solid fa-lightbulb" style="color: var(--accent); font-size: 1.2rem;"></i>
+            <h3>Tips Mengubah Iklan</h3>
           </div>
-          <button type="button" class="alert-close" aria-label="Tutup pesan error">&times;</button>
+          <ul class="tips-list">
+            <li>
+              <span class="tips-num">1</span>
+              <div>
+                <strong>Perbarui Harga Pasar:</strong>
+                <p>Menyesuaikan harga yang bersaing dapat mempercepat transaksi jual beli.</p>
+              </div>
+            </li>
+            <li>
+              <span class="tips-num">2</span>
+              <div>
+                <strong>Ganti Foto Berkualitas:</strong>
+                <p>Hapus foto yang buram dan gantikan dengan foto beresolusi tinggi dari sudut terbaik.</p>
+              </div>
+            </li>
+            <li>
+              <span class="tips-num">3</span>
+              <div>
+                <strong>Deskripsi Lengkap & Jujur:</strong>
+                <p>Sertakan riwayat pemakaian terbaru, minus, atau kelengkapan tambahan barang.</p>
+              </div>
+            </li>
+          </ul>
         </div>
-      <?php endif; ?>
 
-      <form action="edit-iklan.php?id=<?php echo (int)$adId; ?>" method="POST" enctype="multipart/form-data" novalidate id="edit-ad-form">
-
-        <!-- ===== KARTU 1: KATEGORI ===== -->
-        <section class="post-ad-card">
-          <h2 class="post-ad-card-title">
-            <i class="fa-solid fa-layer-group" style="color: var(--primary);"></i> Pilih Kategori
-          </h2>
-          <div class="form-group">
-            <label for="category_id" class="form-label">Kategori Barang <span style="color: var(--danger);">*</span></label>
-            <div class="input-wrapper">
-              <span class="input-icon"><i class="fa-solid fa-tags"></i></span>
-              <select name="category_id" id="category_id" class="form-control" required>
-                <option value="">-- Pilih Kategori --</option>
-                <?php foreach ($categories as $cat): ?>
-                  <option value="<?php echo (int)$cat['id']; ?>" <?php echo ($category_id === (int)$cat['id']) ? 'selected' : ''; ?>>
-                    <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
+        <!-- Card Bantuan -->
+        <div class="rules-card">
+          <div class="rules-card-header">
+            <i class="fa-solid fa-circle-question" style="color: var(--primary); font-size: 1.2rem;"></i>
+            <h3>Butuh Bantuan?</h3>
           </div>
-        </section>
-
-        <!-- ===== KARTU 2: RINCIAN IKLAN ===== -->
-        <section class="post-ad-card">
-          <h2 class="post-ad-card-title">
-            <i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> Rincian Iklan
-          </h2>
-
-          <!-- Judul Iklan -->
-          <div class="form-group" style="margin-bottom: 18px;">
-            <div class="char-counter-row">
-              <label for="title" class="form-label">Judul Iklan <span style="color: var(--danger);">*</span></label>
-              <span class="char-count" id="title-counter"><?php echo mb_strlen($title); ?> / 50 karakter</span>
-            </div>
-            <div class="input-wrapper">
-              <span class="input-icon"><i class="fa-solid fa-heading"></i></span>
-              <input type="text" id="title" name="title" class="form-control" maxlength="50" value="<?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?>" required>
-            </div>
-            <span class="form-hint">Sebutkan nama barang, merk, dan tipe secara ringkas (maksimal 50 karakter).</span>
-          </div>
-
-          <!-- Deskripsi -->
-          <div class="form-group">
-            <label for="description" class="form-label">Deskripsi Lengkap <span style="color: var(--danger);">*</span></label>
-            <textarea id="description" name="description" class="form-control" rows="6" style="padding-left: 14px; resize: vertical;" required><?php echo htmlspecialchars($description, ENT_QUOTES, 'UTF-8'); ?></textarea>
-            <span class="form-hint">Jelaskan kondisi fisik barang, kelengkapan surat/dus, minus, dan riwayat pemakaian.</span>
-          </div>
-        </section>
-
-        <!-- ===== KARTU 3: PENGELOLAAN FOTO ===== -->
-        <section class="post-ad-card">
-          <h2 class="post-ad-card-title">
-            <i class="fa-solid fa-camera" style="color: var(--primary);"></i> Foto Barang
-          </h2>
-
-          <!-- Foto Lama yang Tersimpan -->
-          <?php if (!empty($existingImages)): ?>
-            <p style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">
-              Foto yang Tersimpan (Centang untuk menghapus foto):
-            </p>
-            <div class="existing-photos-grid">
-              <?php foreach ($existingImages as $img): ?>
-                <div class="existing-photo-item">
-                  <img src="<?php echo htmlspecialchars($img['image_path'], ENT_QUOTES, 'UTF-8'); ?>" alt="Foto Listing">
-                  <label class="existing-photo-delete-label">
-                    <input type="checkbox" name="delete_images[]" value="<?php echo (int)$img['id']; ?>">
-                    <span><i class="fa-solid fa-trash-can"></i> Hapus Foto</span>
-                  </label>
-                </div>
-              <?php endforeach; ?>
-            </div>
-          <?php endif; ?>
-
-          <!-- Dropzone Unggah Foto Tambahan -->
-          <p style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">
-            Unggah Foto Baru Tambahan:
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
+            Perubahan informasi iklan akan langsung terbarui di katalog pencarian OLX Clone segera setelah Anda menekan tombol simpan.
           </p>
-          <div class="photo-upload-zone" id="photo-dropzone">
-            <input type="file" id="ad-images-input" name="images[]" multiple accept="image/jpeg,image/png,image/webp">
-            <span class="photo-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
-            <span class="photo-upload-text">Klik atau seret foto baru ke sini</span>
-            <span class="photo-upload-subtext">Format: JPG, PNG, WebP (Maksimal 5MB per foto, total maksimal 5 foto)</span>
-          </div>
-
-          <div class="photo-slots-grid">
-            <div class="photo-slot primary-slot"><i class="fa-solid fa-image"></i><span>Slot 1</span></div>
-            <div class="photo-slot"><i class="fa-solid fa-image"></i><span>Slot 2</span></div>
-            <div class="photo-slot"><i class="fa-solid fa-image"></i><span>Slot 3</span></div>
-            <div class="photo-slot"><i class="fa-solid fa-image"></i><span>Slot 4</span></div>
-            <div class="photo-slot"><i class="fa-solid fa-image"></i><span>Slot 5</span></div>
-          </div>
-        </section>
-
-        <!-- ===== KARTU 4: HARGA & LOKASI ===== -->
-        <section class="post-ad-card">
-          <h2 class="post-ad-card-title">
-            <i class="fa-solid fa-money-bill-wave" style="color: var(--primary);"></i> Harga & Lokasi
-          </h2>
-
-          <!-- Harga -->
-          <div class="form-group" style="margin-bottom: 18px;">
-            <label for="price" class="form-label">Harga Barang <span style="color: var(--danger);">*</span></label>
-            <div class="price-input-wrapper">
-              <span class="price-prefix">Rp</span>
-              <input type="number" id="price" name="price" min="0" step="1000" value="<?php echo htmlspecialchars((string)(int)$price, ENT_QUOTES, 'UTF-8'); ?>" required>
-            </div>
-          </div>
-
-          <!-- Lokasi -->
-          <div class="form-group">
-            <label for="location" class="form-label">Lokasi / Kota <span style="color: var(--danger);">*</span></label>
-            <div class="input-wrapper">
-              <span class="input-icon"><i class="fa-solid fa-location-dot"></i></span>
-              <input type="text" id="location" name="location" class="form-control" maxlength="100" value="<?php echo htmlspecialchars($location, ENT_QUOTES, 'UTF-8'); ?>" required>
-            </div>
-            <span class="form-hint">Contoh: Jakarta Selatan, Surabaya, Bandung, Medan</span>
-          </div>
-        </section>
-
-        <!-- Tombol Aksi Simpan / Batal -->
-        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 10px;">
-          <a href="iklan-saya.php" class="btn btn-outline">
-            <i class="fa-solid fa-xmark"></i> Batal
+          <a href="iklan-saya.php" class="btn btn-outline btn-block" style="font-size: 0.82rem; justify-content: center;">
+            <i class="fa-solid fa-arrow-left"></i> Kembali ke Iklan Saya
           </a>
-          <button type="submit" class="btn btn-solid-primary" style="padding: 12px 28px; font-size: 1rem;">
-            <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
-          </button>
         </div>
 
-      </form>
+      </aside>
 
     </div>
-
-    <!-- Sidebar Informasi Bantuan -->
-    <aside class="post-ad-sidebar">
-      <div class="tips-card">
-        <div class="tips-card-header">
-          <i class="fa-solid fa-lightbulb" style="color: var(--warning);"></i>
-          <h3>Tips Mengubah Iklan</h3>
-        </div>
-        <ul class="tips-list">
-          <li>
-            <span class="tips-num">1</span>
-            <span><strong>Perbarui Harga:</strong> Menyesuaikan harga dengan kondisi pasar dapat meningkatkan minat calon pembeli.</span>
-          </li>
-          <li>
-            <span class="tips-num">2</span>
-            <span><strong>Foto Berkualitas:</strong> Anda dapat menghapus foto yang kurang jelas dan menggantinya dengan foto sudut lain.</span>
-          </li>
-          <li>
-            <span class="tips-num">3</span>
-            <span><strong>Kejujuran Deskripsi:</strong> Sebutkan jika ada pembaruan kondisi atau kelengkapan barang.</span>
-          </li>
-        </ul>
-      </div>
-    </aside>
-
   </main>
 
 
@@ -528,18 +678,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <footer class="site-footer" role="contentinfo">
     <div class="container">
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
-        <nav aria-label="Footer legal">
-          <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
-          <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;
-          <a href="sitemap.xml">Sitemap</a>
-        </nav>
+        <p>&copy; <?php echo date('Y'); ?> OLX Clone. Hak Cipta Dilindungi Undang-Undang.</p>
+        <div class="footer-badges">
+          <span class="badge-tag"><i class="fa-solid fa-shield-halved"></i> Transaksi Aman</span>
+          <span class="badge-tag"><i class="fa-solid fa-check-double"></i> Bebas Biaya</span>
+        </div>
       </div>
     </div>
   </footer>
 
-  <!-- ==================== JAVASCRIPT ==================== -->
+  <!-- SCRIPT UTAMA -->
   <script src="assets/js/main.js"></script>
+
 </body>
 
 </html>
