@@ -284,22 +284,24 @@
 
   <!-- ================================================================
        NAVIGASI KATEGORI — Tabel: categories (id, name, icon)
-       Sembunyi otomatis saat filter kategori aktif
+       Satu wrapper terintegrasi dengan ekspansi inline "Lainnya"
        ================================================================ -->
-  <?php if ($catFilter === null): ?>
-    <nav class="category-nav" aria-label="Navigasi kategori">
-      <div class="container">
-        <div class="category-nav-wrapper">
+  <nav class="category-nav" aria-label="Navigasi kategori">
+    <div class="container">
+      <div class="category-nav-wrapper" id="category-nav-wrapper">
+
+        <!-- Baris Utama Kategori -->
+        <div class="category-nav-main-row">
           <ul class="category-nav-list">
             <li>
-              <a href="<?php echo htmlspecialchars(filterUrl(['c' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="active">
+              <a href="<?php echo htmlspecialchars(filterUrl(['c' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($catFilter === null) ? 'active' : ''; ?>">
                 <span class="cat-icon"><i class="fa-solid fa-border-all"></i></span>
                 Semua Kategori
               </a>
             </li>
             <?php foreach (array_slice($categories, 0, 6) as $cat): ?>
               <li>
-                <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>">
+                <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($catFilter === (int)$cat['id']) ? 'active' : ''; ?>">
                   <span class="cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']); ?>"></i></span>
                   <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>
                 </a>
@@ -309,32 +311,41 @@
 
           <!-- Tombol Titik Tiga / Lainnya untuk Membuka Seluruh Kategori -->
           <div class="category-more-wrapper">
-            <button type="button" class="category-more-btn" aria-expanded="false" aria-controls="category-extended-drawer" title="Tampilkan Semua Kategori">
+            <button type="button" class="category-more-btn" id="category-more-btn" aria-expanded="false" aria-controls="category-nav-expanded" title="Tampilkan Semua Kategori">
               <span class="cat-icon"><i class="fa-solid fa-ellipsis"></i></span>
-              <span>Lainnya</span>
+              <span class="more-text">Lainnya</span>
               <i class="fa-solid fa-chevron-down more-arrow"></i>
             </button>
           </div>
         </div>
 
-        <!-- Panel Extended Kebawah (Drawer Seluruh Kategori) -->
-        <div class="category-extended-drawer" id="category-extended-drawer" role="region" aria-label="Seluruh Kategori">
-          <div class="category-drawer-header">
-            <h3><i class="fa-solid fa-layer-group"></i> Seluruh Kategori OLX Clone</h3>
-            <button type="button" class="category-drawer-close" aria-label="Tutup panel kategori">&times;</button>
+        <!-- Bagian yang Ikut Masuk Mengembang ke Bawah (Satu Wrapper) -->
+        <div class="category-nav-expanded" id="category-nav-expanded" aria-hidden="true">
+          <div class="category-nav-expanded-divider"></div>
+          <div class="category-nav-expanded-heading">
+            <i class="fa-solid fa-layer-group"></i> Seluruh Kategori OLX Clone
           </div>
-          <div class="category-drawer-grid">
-            <?php foreach ($categories as $cat): ?>
-              <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>" class="category-drawer-card">
-                <span class="drawer-cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']); ?>"></i></span>
-                <span class="drawer-cat-name"><?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?></span>
+          <ul class="category-nav-expanded-list">
+            <li>
+              <a href="<?php echo htmlspecialchars(filterUrl(['c' => '']), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($catFilter === null) ? 'active' : ''; ?>">
+                <span class="cat-icon"><i class="fa-solid fa-border-all"></i></span>
+                Semua Kategori
               </a>
+            </li>
+            <?php foreach ($categories as $cat): ?>
+              <li>
+                <a href="<?php echo htmlspecialchars(filterUrl(['c' => $cat['id']]), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($catFilter === (int)$cat['id']) ? 'active' : ''; ?>">
+                  <span class="cat-icon"><i class="<?php echo htmlspecialchars($cat['icon']); ?>"></i></span>
+                  <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>
+                </a>
+              </li>
             <?php endforeach; ?>
-          </div>
+          </ul>
         </div>
+
       </div>
-    </nav>
-  <?php endif; ?>
+    </div>
+  </nav>
 
 
   <!-- ================================================================

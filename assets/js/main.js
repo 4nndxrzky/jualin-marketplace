@@ -334,41 +334,50 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==========================================================================
-  // 11. CATEGORY EXTENDED DRAWER TOGGLE (HOMEPAGE MORE / TITIK TIGA)
+  // 11. CATEGORY EXTENDED WRAPPER TOGGLE (HOMEPAGE MORE / TITIK TIGA)
   // ==========================================================================
   const categoryMoreBtn = document.querySelector(".category-more-btn");
-  const categoryDrawer = document.querySelector(".category-extended-drawer");
-  const categoryDrawerClose = document.querySelector(".category-drawer-close");
+  const categoryNavExpanded = document.querySelector(".category-nav-expanded");
 
-  if (categoryMoreBtn && categoryDrawer) {
+  if (categoryMoreBtn && categoryNavExpanded) {
+    const moreTextSpan = categoryMoreBtn.querySelector(".more-text");
+
     categoryMoreBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      const isOpen = categoryDrawer.classList.toggle("show");
+      const isOpen = categoryNavExpanded.classList.toggle("show");
       categoryMoreBtn.classList.toggle("active", isOpen);
       categoryMoreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      categoryNavExpanded.setAttribute("aria-hidden", isOpen ? "false" : "true");
+
+      if (moreTextSpan) {
+        moreTextSpan.textContent = isOpen ? "Tutup" : "Lainnya";
+      }
     });
 
-    if (categoryDrawerClose) {
-      categoryDrawerClose.addEventListener("click", () => {
-        categoryDrawer.classList.remove("show");
-        categoryMoreBtn.classList.remove("active");
-        categoryMoreBtn.setAttribute("aria-expanded", "false");
-      });
-    }
-
     document.addEventListener("click", (e) => {
-      if (!categoryDrawer.contains(e.target) && !categoryMoreBtn.contains(e.target)) {
-        categoryDrawer.classList.remove("show");
+      if (
+        !categoryNavExpanded.contains(e.target) &&
+        !categoryMoreBtn.contains(e.target)
+      ) {
+        categoryNavExpanded.classList.remove("show");
         categoryMoreBtn.classList.remove("active");
         categoryMoreBtn.setAttribute("aria-expanded", "false");
+        categoryNavExpanded.setAttribute("aria-hidden", "true");
+        if (moreTextSpan) {
+          moreTextSpan.textContent = "Lainnya";
+        }
       }
     });
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
-        categoryDrawer.classList.remove("show");
+        categoryNavExpanded.classList.remove("show");
         categoryMoreBtn.classList.remove("active");
         categoryMoreBtn.setAttribute("aria-expanded", "false");
+        categoryNavExpanded.setAttribute("aria-hidden", "true");
+        if (moreTextSpan) {
+          moreTextSpan.textContent = "Lainnya";
+        }
       }
     });
   }

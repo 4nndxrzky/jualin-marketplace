@@ -8,14 +8,19 @@
 -- PHP Version: 8.3.13
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+
 START TRANSACTION;
+
 SET time_zone = "+00:00";
 
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */
+;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */
+;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */
+;
+/*!40101 SET NAMES utf8mb4 */
+;
 
 --
 -- Database: `olx_clone`
@@ -28,15 +33,15 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `ads` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `category_id` int NOT NULL,
-  `title` varchar(50) NOT NULL,
-  `description` text,
-  `price` decimal(15,2) NOT NULL,
-  `location` varchar(100) DEFAULT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    `id` int NOT NULL,
+    `user_id` int NOT NULL,
+    `category_id` int NOT NULL,
+    `title` varchar(50) NOT NULL,
+    `description` text,
+    `price` decimal(15, 2) NOT NULL,
+    `location` varchar(100) DEFAULT NULL,
+    `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `ads`
@@ -64,20 +69,37 @@ INSERT INTO `ads` (`id`, `user_id`, `category_id`, `title`, `description`, `pric
 --
 
 CREATE TABLE `ad_images` (
-  `id` int NOT NULL,
-  `ad_id` int NOT NULL,
-  `image_path` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    `id` int NOT NULL,
+    `ad_id` int NOT NULL,
+    `image_path` varchar(255) NOT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `ad_images`
 --
 
-INSERT INTO `ad_images` (`id`, `ad_id`, `image_path`) VALUES
-(1, 2, 'uploads/ads/ad_72ec9dd8799d29c4_1790137866.jpg'),
-(2, 2, 'uploads/ads/ad_fe713594495e20d0_1790137866.jpg'),
-(3, 2, 'uploads/ads/ad_3bf0553371cec8c0_1790137866.jpg'),
-(4, 2, 'uploads/ads/ad_4e042ad50f386304_1790137866.jpg');
+INSERT INTO
+    `ad_images` (`id`, `ad_id`, `image_path`)
+VALUES (
+        1,
+        2,
+        'uploads/ads/ad_72ec9dd8799d29c4_1790137866.jpg'
+    ),
+    (
+        2,
+        2,
+        'uploads/ads/ad_fe713594495e20d0_1790137866.jpg'
+    ),
+    (
+        3,
+        2,
+        'uploads/ads/ad_3bf0553371cec8c0_1790137866.jpg'
+    ),
+    (
+        4,
+        2,
+        'uploads/ads/ad_4e042ad50f386304_1790137866.jpg'
+    );
 
 -- --------------------------------------------------------
 
@@ -86,26 +108,63 @@ INSERT INTO `ad_images` (`id`, `ad_id`, `image_path`) VALUES
 --
 
 CREATE TABLE `categories` (
-  `id` int NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `icon` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    `id` int NOT NULL,
+    `name` varchar(50) NOT NULL,
+    `icon` varchar(100) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `categories`
 --
 
-INSERT INTO `categories` (`id`, `name`, `icon`) VALUES
-(1, 'Mobil', 'fa-solid fa-car'),
-(2, 'Motor', 'fa-solid fa-motorcycle'),
-(3, 'Properti', 'fa-solid fa-house'),
-(4, 'Elektronik & Gadget', 'fa-solid fa-mobile-screen-button'),
-(5, 'Perabotan Rumah Tangga', 'fa-solid fa-couch'),
-(6, 'Fashion & Pakaian', 'fa-solid fa-shirt'),
-(7, 'Hobi & Olahraga', 'fa-solid fa-futbol'),
-(8, 'Jasa & Layanan', 'fa-solid fa-wrench'),
-(9, 'Lowongan Kerja', 'fa-solid fa-briefcase'),
-(10, 'Keperluan Lainnya', 'fa-solid fa-box-open');
+INSERT INTO
+    `categories` (`id`, `name`, `icon`)
+VALUES (1, 'Mobil', 'fa-solid fa-car'),
+    (
+        2,
+        'Motor',
+        'fa-solid fa-motorcycle'
+    ),
+    (
+        3,
+        'Properti',
+        'fa-solid fa-house'
+    ),
+    (
+        4,
+        'Elektronik & Gadget',
+        'fa-solid fa-mobile-screen-button'
+    ),
+    (
+        5,
+        'Perabotan Rumah Tangga',
+        'fa-solid fa-couch'
+    ),
+    (
+        6,
+        'Fashion & Pakaian',
+        'fa-solid fa-shirt'
+    ),
+    (
+        7,
+        'Hobi & Olahraga',
+        'fa-solid fa-futbol'
+    ),
+    (
+        8,
+        'Jasa & Layanan',
+        'fa-solid fa-wrench'
+    ),
+    (
+        9,
+        'Lowongan Kerja',
+        'fa-solid fa-briefcase'
+    ),
+    (
+        10,
+        'Keperluan Lainnya',
+        'fa-solid fa-box-open'
+    );
 
 -- --------------------------------------------------------
 
@@ -114,21 +173,43 @@ INSERT INTO `categories` (`id`, `name`, `icon`) VALUES
 --
 
 CREATE TABLE `users` (
-  `id` int NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `whatsapp` varchar(20) DEFAULT NULL,
-  `password` varchar(255) NOT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    `id` int NOT NULL,
+    `name` varchar(100) NOT NULL,
+    `email` varchar(100) NOT NULL,
+    `whatsapp` varchar(20) DEFAULT NULL,
+    `password` varchar(255) NOT NULL,
+    `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `whatsapp`, `password`, `created_at`) VALUES
-(1, 'Rizky Pratama', 'rizky@email.com', '081234567890', '$2y$10$TKzbrKe3qzfd6hf0.jevKeR4yn.yRaqlVn7dL9gFCJg32gcjBgqoO', '2024-01-15 10:00:00'),
-(2, 'Ananda Rizky', 'akunbaru291222@gmail.com', '085693557069', '$2y$10$TKzbrKe3qzfd6hf0.jevKeR4yn.yRaqlVn7dL9gFCJg32gcjBgqoO', '2026-09-21 20:56:17');
+INSERT INTO
+    `users` (
+        `id`,
+        `name`,
+        `email`,
+        `whatsapp`,
+        `password`,
+        `created_at`
+    )
+VALUES (
+        1,
+        'Rizky Pratama',
+        'rizky@email.com',
+        '081234567890',
+        '$2y$10$TKzbrKe3qzfd6hf0.jevKeR4yn.yRaqlVn7dL9gFCJg32gcjBgqoO',
+        '2024-01-15 10:00:00'
+    ),
+    (
+        2,
+        'Ananda Rizky',
+        'akunbaru291222@gmail.com',
+        '085693557069',
+        '$2y$10$TKzbrKe3qzfd6hf0.jevKeR4yn.yRaqlVn7dL9gFCJg32gcjBgqoO',
+        '2026-09-21 20:56:17'
+    );
 
 --
 -- Indexes for dumped tables
@@ -138,29 +219,28 @@ INSERT INTO `users` (`id`, `name`, `email`, `whatsapp`, `password`, `created_at`
 -- Indexes for table `ads`
 --
 ALTER TABLE `ads`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `category_id` (`category_id`);
+ADD PRIMARY KEY (`id`),
+ADD KEY `user_id` (`user_id`),
+ADD KEY `category_id` (`category_id`);
 
 --
 -- Indexes for table `ad_images`
 --
 ALTER TABLE `ad_images`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `ad_id` (`ad_id`);
+ADD PRIMARY KEY (`id`),
+ADD KEY `ad_id` (`ad_id`);
 
 --
 -- Indexes for table `categories`
 --
-ALTER TABLE `categories`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `categories` ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
+ADD PRIMARY KEY (`id`),
+ADD UNIQUE KEY `email` (`email`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -169,26 +249,26 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for table `ads`
 --
-ALTER TABLE `ads`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+ALTER TABLE `ads` MODIFY `id` int NOT NULL AUTO_INCREMENT,
+AUTO_INCREMENT = 15;
 
 --
 -- AUTO_INCREMENT for table `ad_images`
 --
-ALTER TABLE `ad_images`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+ALTER TABLE `ad_images` MODIFY `id` int NOT NULL AUTO_INCREMENT,
+AUTO_INCREMENT = 5;
 
 --
 -- AUTO_INCREMENT for table `categories`
 --
-ALTER TABLE `categories`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+ALTER TABLE `categories` MODIFY `id` int NOT NULL AUTO_INCREMENT,
+AUTO_INCREMENT = 11;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
-ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+ALTER TABLE `users` MODIFY `id` int NOT NULL AUTO_INCREMENT,
+AUTO_INCREMENT = 3;
 
 --
 -- Constraints for dumped tables
@@ -198,16 +278,20 @@ ALTER TABLE `users`
 -- Constraints for table `ads`
 --
 ALTER TABLE `ads`
-  ADD CONSTRAINT `ads_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `ads_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+ADD CONSTRAINT `ads_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+ADD CONSTRAINT `ads_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
 
 --
 -- Constraints for table `ad_images`
 --
 ALTER TABLE `ad_images`
-  ADD CONSTRAINT `ad_images_ibfk_1` FOREIGN KEY (`ad_id`) REFERENCES `ads` (`id`);
+ADD CONSTRAINT `ad_images_ibfk_1` FOREIGN KEY (`ad_id`) REFERENCES `ads` (`id`);
+
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */
+;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */
+;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */
+;
