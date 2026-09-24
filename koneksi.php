@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * KONFIGURASI KONEKSI DATABASE (PHP PDO)
- * Proyek: OLX Clone Marketplace
+ * Proyek: Jualin Marketplace
  * Database Target: olx_clone (berdasarkan olx_clone.sql)
  * Server: MySQL 8.0.30 (Laragon / localhost:3306)
  * ============================================================================
@@ -52,3 +52,7 @@ try {
         "<p>Pesan Error: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . "</p>" .
         "<p><em>Pastikan server MySQL di Laragon/XAMPP sudah aktif dan database '<strong>{$dbname}</strong>' sudah dibuat.</em></p>");
 }
+// 5. Konfigurasi Aplikasi (Brand & Identitas)
+define('APP_NAME', 'Jualin');
+define('APP_TAGLINE', 'Marketplace Terpercaya');
+define('APP_COMPANY', 'Jualin Indonesia');

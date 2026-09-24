@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Informasi: Hubungi Kami (kontak.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  */
 
     session_start();
@@ -29,8 +29,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hubungi Kami — OLX Clone | Layanan Pelanggan</title>
-  <meta name="description" content="Hubungi layanan pelanggan OLX Clone untuk bantuan kendala akun, pasang iklan, laporan penipuan, atau pertanyaan umum.">
+  <title>Hubungi Kami — Jualin | Layanan Pelanggan</title>
+  <meta name="description" content="Hubungi layanan pelanggan Jualin untuk bantuan kendala akun, pasang iklan, laporan penipuan, atau pertanyaan umum.">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -54,8 +54,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Selector Dinamis -->
@@ -79,7 +79,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -141,7 +141,7 @@
       <header class="info-header">
         <span class="info-header-badge"><i class="fa-solid fa-headset"></i> Pusat Bantuan</span>
         <h1>Hubungi Kami</h1>
-        <p>Tim support kami siap membantu menjawab pertanyaan Anda dan mendengarkan masukan terkait kenyamanan jual beli di OLX Clone.</p>
+        <p>Tim support kami siap membantu menjawab pertanyaan Anda dan mendengarkan masukan terkait kenyamanan jual beli di Jualin.</p>
       </header>
 
       <div class="info-body">
@@ -162,7 +162,7 @@
                 <div class="info-subcard-icon" style="width: 36px; height: 36px; font-size: 1rem; flex-shrink: 0;"><i class="fa-solid fa-envelope"></i></div>
                 <div>
                   <strong>Email Bantuan:</strong><br>
-                  <span style="color: var(--text-muted);">support@olxclone.local</span>
+                  <span style="color: var(--text-muted);">support@jualin.local</span>
                 </div>
               </li>
               <li style="display: flex; gap: 12px; margin-bottom: 16px;">
@@ -214,7 +214,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -250,7 +250,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

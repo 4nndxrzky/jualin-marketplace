@@ -87,7 +87,7 @@
     }
 
     // Pesan pra-isi WhatsApp yang sopan & menyertakan rincian iklan
-    $waMessage = "Halo " . ($ad['seller_name'] ?? 'Penjual') . ", saya tertarik dengan iklan \"" . $ad['title'] . "\" (ID: #" . str_pad((string) $ad['id'], 5, '0', STR_PAD_LEFT) . ") di OLX Clone seharga Rp " . number_format($ad['price'], 0, ',', '.') . ". Apakah masih tersedia?";
+    $waMessage = "Halo " . ($ad['seller_name'] ?? 'Penjual') . ", saya tertarik dengan iklan \"" . $ad['title'] . "\" (ID: #" . str_pad((string) $ad['id'], 5, '0', STR_PAD_LEFT) . ") di Jualin seharga Rp " . number_format($ad['price'], 0, ',', '.') . ". Apakah masih tersedia?";
     $waUrl     = "https://wa.me/{$waClean}?text=" . rawurlencode($waMessage);
 
     // --------------------------------------------------------------------------
@@ -105,7 +105,7 @@
     $stmtRelated->execute([$ad['category_id'] ?? 0, $ad['id'] ?? 0]);
     $relatedAds = $stmtRelated->fetchAll();
 
-    $pageTitle      = htmlspecialchars($ad['title'] ?? 'Detail Iklan', ENT_QUOTES, 'UTF-8') . " — OLX Clone";
+    $pageTitle      = htmlspecialchars($ad['title'] ?? 'Detail Iklan', ENT_QUOTES, 'UTF-8') . " — Jualin";
     $priceFormatted = "Rp " . number_format($ad['price'] ?? 0, 0, ',', '.');
 ?>
 <!DOCTYPE html>
@@ -120,17 +120,17 @@
   <!-- ==================== SEO META TAGS (DINAMIS) ==================== -->
   <title><?php echo $pageTitle; ?></title>
   <meta name="description" content="<?php echo htmlspecialchars(mb_substr(strip_tags($ad['description'] ?? ''), 0, 160), ENT_QUOTES, 'UTF-8'); ?>">
-  <meta name="keywords" content="<?php echo htmlspecialchars($ad['title'] ?? '', ENT_QUOTES, 'UTF-8'); ?>, jual beli online, OLX Clone">
-  <meta name="author" content="<?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual OLX Clone', ENT_QUOTES, 'UTF-8'); ?>">
+  <meta name="keywords" content="<?php echo htmlspecialchars($ad['title'] ?? '', ENT_QUOTES, 'UTF-8'); ?>, jual beli online, Jualin">
+  <meta name="author" content="<?php echo htmlspecialchars($ad['seller_name'] ?? 'Penjual Jualin', ENT_QUOTES, 'UTF-8'); ?>">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://olxclone.local/detail.php?id=<?php echo (int) ($ad['id'] ?? 1); ?>">
+  <link rel="canonical" href="https://jualin.local/detail.php?id=<?php echo (int) ($ad['id'] ?? 1); ?>">
 
   <!-- ==================== OPEN GRAPH ==================== -->
   <meta property="og:type" content="product">
   <meta property="og:title" content="<?php echo $pageTitle; ?>">
   <meta property="og:description" content="<?php echo htmlspecialchars(mb_substr(strip_tags($ad['description'] ?? ''), 0, 120), ENT_QUOTES, 'UTF-8'); ?>">
-  <meta property="og:url" content="https://olxclone.local/detail.php?id=<?php echo (int) ($ad['id'] ?? 1); ?>">
-  <meta property="og:site_name" content="OLX Clone">
+  <meta property="og:url" content="https://jualin.local/detail.php?id=<?php echo (int) ($ad['id'] ?? 1); ?>">
+  <meta property="og:site_name" content="Jualin">
   <meta property="og:locale" content="id_ID">
   <meta property="product:price:amount" content="<?php echo (float) ($ad['price'] ?? 0); ?>">
   <meta property="product:price:currency" content="IDR">
@@ -157,8 +157,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Selector Dinamis -->
@@ -182,7 +182,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -504,7 +504,7 @@
 
         <!-- Kolom 1: Tentang -->
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -553,7 +553,7 @@
 
       <!-- Footer Bottom -->
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

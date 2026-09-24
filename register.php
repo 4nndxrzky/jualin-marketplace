@@ -106,27 +106,27 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>Daftar Akun Baru — OLX Clone | Jual Beli Mudah & Cepat</title>
-  <meta name="description" content="Daftar akun OLX Clone gratis sekarang! Pasang iklan jual beli mobil, motor, properti, dan gadget bekas maupun baru dengan mudah, aman, dan terpercaya.">
-  <meta name="keywords" content="daftar OLX Clone, buat akun baru, registrasi marketplace, jual beli online, pasang iklan gratis">
-  <meta name="author" content="OLX Clone">
+  <title>Daftar Akun Baru — Jualin | Jual Beli Mudah & Cepat</title>
+  <meta name="description" content="Daftar akun Jualin gratis sekarang! Pasang iklan jual beli mobil, motor, properti, dan gadget bekas maupun baru dengan mudah, aman, dan terpercaya.">
+  <meta name="keywords" content="daftar Jualin, buat akun baru, registrasi marketplace, jual beli online, pasang iklan gratis">
+  <meta name="author" content="Jualin">
   <!-- Best Practice SEO: noindex, follow untuk form otentikasi -->
   <meta name="robots" content="noindex, follow">
-  <link rel="canonical" href="https://olxclone.local/register.php">
+  <link rel="canonical" href="https://jualin.local/register.php">
 
   <!-- ==================== OPEN GRAPH ==================== -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Daftar Akun Baru — OLX Clone">
-  <meta property="og:description" content="Bergabunglah bersama ribuan penjual dan pembeli terpercaya di OLX Clone. Pasang iklan gratis hari ini!">
-  <meta property="og:url" content="https://olxclone.local/register.php">
+  <meta property="og:title" content="Daftar Akun Baru — Jualin">
+  <meta property="og:description" content="Bergabunglah bersama ribuan penjual dan pembeli terpercaya di Jualin. Pasang iklan gratis hari ini!">
+  <meta property="og:url" content="https://jualin.local/register.php">
   <meta property="og:image" content="assets/images/og-preview.jpg">
-  <meta property="og:site_name" content="OLX Clone">
+  <meta property="og:site_name" content="Jualin">
   <meta property="og:locale" content="id_ID">
 
   <!-- ==================== TWITTER CARD ==================== -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Daftar Akun Baru — OLX Clone">
-  <meta name="twitter:description" content="Buat akun OLX Clone gratis dan mulai jual beli barang dengan cepat.">
+  <meta name="twitter:title" content="Daftar Akun Baru — Jualin">
+  <meta name="twitter:description" content="Buat akun Jualin gratis dan mulai jual beli barang dengan cepat.">
   <meta name="twitter:image" content="assets/images/og-preview.jpg">
 
   <!-- ==================== FAVICON ==================== -->
@@ -139,9 +139,9 @@
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Daftar Akun Baru — OLX Clone",
-      "url": "https://olxclone.local/register.php",
-      "description": "Halaman pendaftaran akun baru pengguna OLX Clone.",
+      "name": "Daftar Akun Baru — Jualin",
+      "url": "https://jualin.local/register.php",
+      "description": "Halaman pendaftaran akun baru pengguna Jualin.",
       "breadcrumb": {
         "@type": "BreadcrumbList",
         "itemListElement": [
@@ -149,13 +149,13 @@
             "@type": "ListItem",
             "position": 1,
             "name": "Beranda",
-            "item": "https://olxclone.local/"
+            "item": "https://jualin.local/"
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Daftar Akun",
-            "item": "https://olxclone.local/register.php"
+            "item": "https://jualin.local/register.php"
           }
         ]
       }
@@ -179,8 +179,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Auth Action Navigasi -->
@@ -348,7 +348,7 @@
               <span>
                 Saya menyetujui
                 <a href="syarat-ketentuan.php" target="_blank" rel="noopener">Syarat & Ketentuan</a> serta
-                <a href="kebijakan-privasi.php" target="_blank" rel="noopener">Kebijakan Privasi</a> OLX Clone.
+                <a href="kebijakan-privasi.php" target="_blank" rel="noopener">Kebijakan Privasi</a> Jualin.
               </span>
             </label>
           </div>
@@ -362,7 +362,7 @@
 
         <!-- Link ke Halaman Login -->
         <p class="auth-footer-text">
-          Sudah punya akun OLX Clone?
+          Sudah punya akun Jualin?
           <a href="login.php">Masuk di sini</a>
         </p>
 
@@ -388,7 +388,7 @@
 
         <!-- Kolom 1: Tentang -->
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -434,7 +434,7 @@
 
       <!-- Footer Bottom -->
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> ·
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> ·

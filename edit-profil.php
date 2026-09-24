@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Edit Profil Pengguna (edit-profil.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  *
  * Fitur:
  * 1. Autentikasi ketat (wajib login).
@@ -164,8 +164,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>Edit Profil — OLX Clone | Pengaturan Akun</title>
-  <meta name="description" content="Perbarui informasi profil akun OLX Clone Anda, nomor WhatsApp untuk calon pembeli, serta kelola kata sandi akun Anda.">
+  <title>Edit Profil — Jualin | Pengaturan Akun</title>
+  <meta name="description" content="Perbarui informasi profil akun Jualin Anda, nomor WhatsApp untuk calon pembeli, serta kelola kata sandi akun Anda.">
   <meta name="robots" content="noindex, follow">
 
   <!-- ==================== FAVICON ==================== -->
@@ -190,8 +190,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Auth Header Actions -->
@@ -362,7 +362,7 @@
                   maxlength="100"
                   value="<?php echo htmlspecialchars($email, ENT_QUOTES, 'UTF-8'); ?>">
               </div>
-              <span class="form-hint">Digunakan untuk masuk ke akun OLX Clone Anda.</span>
+              <span class="form-hint">Digunakan untuk masuk ke akun Jualin Anda.</span>
             </div>
           </section>
 
@@ -480,7 +480,7 @@
               <span class="tips-num">2</span>
               <div>
                 <strong>Kerahasiaan Kata Sandi:</strong>
-                <p>Jangan pernah membagikan kata sandi Anda kepada siapa pun, termasuk pihak yang mengatasnamakan OLX Clone.</p>
+                <p>Jangan pernah membagikan kata sandi Anda kepada siapa pun, termasuk pihak yang mengatasnamakan Jualin.</p>
               </div>
             </li>
             <li>
@@ -505,7 +505,7 @@
   <footer class="site-footer" role="contentinfo">
     <div class="container">
       <div class="footer-bottom">
-        <p>&copy; <?php echo date('Y'); ?> OLX Clone. Hak Cipta Dilindungi Undang-Undang.</p>
+        <p>&copy; <?php echo date('Y'); ?> Jualin. Hak Cipta Dilindungi Undang-Undang.</p>
         <div class="footer-badges">
           <span class="badge-tag"><i class="fa-solid fa-shield-halved"></i> Transaksi Aman</span>
           <span class="badge-tag"><i class="fa-solid fa-check-double"></i> Bebas Biaya</span>

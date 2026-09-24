@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Edit Iklan (edit-iklan.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  *
  * Fitur:
  * 1. Proteksi Autentikasi ketat (wajib login).
@@ -249,8 +249,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>Edit Iklan: <?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?> — OLX Clone</title>
-  <meta name="description" content="Perbarui rincian, foto, harga, dan lokasi iklan Anda di OLX Clone.">
+  <title>Edit Iklan: <?php echo htmlspecialchars($ad['title'], ENT_QUOTES, 'UTF-8'); ?> — Jualin</title>
+  <meta name="description" content="Perbarui rincian, foto, harga, dan lokasi iklan Anda di Jualin.">
   <meta name="robots" content="noindex, follow">
 
   <!-- ==================== FAVICON ==================== -->
@@ -275,8 +275,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Auth Action Navigasi -->
@@ -646,7 +646,7 @@
             <h3>Butuh Bantuan?</h3>
           </div>
           <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
-            Perubahan informasi iklan akan langsung terbarui di katalog pencarian OLX Clone segera setelah Anda menekan tombol simpan.
+            Perubahan informasi iklan akan langsung terbarui di katalog pencarian Jualin segera setelah Anda menekan tombol simpan.
           </p>
           <a href="iklan-saya.php" class="btn btn-outline btn-block" style="font-size: 0.82rem; justify-content: center;">
             <i class="fa-solid fa-arrow-left"></i> Kembali ke Iklan Saya
@@ -665,7 +665,7 @@
   <footer class="site-footer" role="contentinfo">
     <div class="container">
       <div class="footer-bottom">
-        <p>&copy; <?php echo date('Y'); ?> OLX Clone. Hak Cipta Dilindungi Undang-Undang.</p>
+        <p>&copy; <?php echo date('Y'); ?> Jualin. Hak Cipta Dilindungi Undang-Undang.</p>
         <div class="footer-badges">
           <span class="badge-tag"><i class="fa-solid fa-shield-halved"></i> Transaksi Aman</span>
           <span class="badge-tag"><i class="fa-solid fa-check-double"></i> Bebas Biaya</span>

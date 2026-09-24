@@ -57,8 +57,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>Iklan Saya — OLX Clone | Kelola Listing Jual Beli</title>
-  <meta name="description" content="Kelola seluruh iklan dan barang yang Anda pasang di OLX Clone. Edit rincian harga, foto, dan deskripsi barang dengan mudah.">
+  <title>Iklan Saya — Jualin | Kelola Listing Jual Beli</title>
+  <meta name="description" content="Kelola seluruh iklan dan barang yang Anda pasang di Jualin. Edit rincian harga, foto, dan deskripsi barang dengan mudah.">
   <meta name="robots" content="noindex, follow">
 
   <!-- ==================== FAVICON ==================== -->
@@ -83,8 +83,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Auth Actions -->
@@ -311,7 +311,7 @@
 
         <!-- Kolom 1: Tentang -->
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -360,7 +360,7 @@
 
       <!-- Footer Bottom -->
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

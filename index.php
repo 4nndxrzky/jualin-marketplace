@@ -142,11 +142,11 @@
     $recommendations = $stmtRec->fetchAll();
 
     // Penentuan meta title dinamis
-    $pageTitle = 'OLX Clone — Jual Beli Online Mudah & Terpercaya';
+    $pageTitle = 'Jualin — Jual Beli Online Mudah & Terpercaya';
     if ($search !== '') {
-    $pageTitle = 'Cari "' . htmlspecialchars($search, ENT_QUOTES, 'UTF-8') . '" — OLX Clone';
+    $pageTitle = 'Cari "' . htmlspecialchars($search, ENT_QUOTES, 'UTF-8') . '" — Jualin';
     } elseif ($currentCategoryName) {
-    $pageTitle = 'Jual Beli ' . htmlspecialchars($currentCategoryName, ENT_QUOTES, 'UTF-8') . ' — OLX Clone';
+    $pageTitle = 'Jual Beli ' . htmlspecialchars($currentCategoryName, ENT_QUOTES, 'UTF-8') . ' — Jualin';
     }
 ?>
 <!DOCTYPE html>
@@ -160,28 +160,28 @@
 
   <!-- ==================== SEO META TAGS ==================== -->
   <title><?php echo $pageTitle; ?></title>
-  <meta name="description" content="Temukan ribuan iklan barang bekas dan baru di OLX Clone. Jual beli mobil, properti, elektronik, dan lainnya dengan mudah, cepat, dan terpercaya.">
-  <meta name="keywords" content="jual beli online, marketplace, iklan gratis, barang bekas, OLX, beli murah, jual cepat">
-  <meta name="author" content="OLX Clone">
+  <meta name="description" content="Temukan ribuan iklan barang bekas dan baru di Jualin. Jual beli mobil, properti, elektronik, dan lainnya dengan mudah, cepat, dan terpercaya.">
+  <meta name="keywords" content="jual beli online, marketplace, iklan gratis, barang bekas, Jualin, beli murah, jual cepat">
+  <meta name="author" content="Jualin">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://olxclone.local/<?php echo $hasActiveFilter ? htmlspecialchars(filterUrl(), ENT_QUOTES, 'UTF-8') : ''; ?>">
+  <link rel="canonical" href="https://jualin.local/<?php echo $hasActiveFilter ? htmlspecialchars(filterUrl(), ENT_QUOTES, 'UTF-8') : ''; ?>">
 
   <!-- ==================== OPEN GRAPH (Facebook/WhatsApp) ==================== -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="<?php echo $pageTitle; ?>">
   <meta property="og:description" content="Temukan ribuan iklan barang bekas dan baru. Jual beli mobil, properti, elektronik dengan mudah dan terpercaya.">
-  <meta property="og:url" content="https://olxclone.local/">
-  <meta property="og:image" content="https://olxclone.local/assets/images/og-preview.jpg">
+  <meta property="og:url" content="https://jualin.local/">
+  <meta property="og:image" content="https://jualin.local/assets/images/og-preview.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:site_name" content="OLX Clone">
+  <meta property="og:site_name" content="Jualin">
   <meta property="og:locale" content="id_ID">
 
   <!-- ==================== TWITTER CARD ==================== -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?php echo $pageTitle; ?>">
-  <meta name="twitter:description" content="Temukan ribuan iklan barang bekas dan baru di OLX Clone.">
-  <meta name="twitter:image" content="https://olxclone.local/assets/images/og-preview.jpg">
+  <meta name="twitter:description" content="Temukan ribuan iklan barang bekas dan baru di Jualin.">
+  <meta name="twitter:image" content="https://jualin.local/assets/images/og-preview.jpg">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -193,12 +193,12 @@
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "OLX Clone",
-      "url": "https://olxclone.local/",
+      "name": "Jualin",
+      "url": "https://jualin.local/",
       "description": "Jual beli online mudah dan terpercaya",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://olxclone.local/index.php?q={search_term_string}",
+        "target": "https://jualin.local/index.php?q={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }
@@ -208,13 +208,13 @@
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "OLX Clone",
-      "url": "https://olxclone.local/",
-      "logo": "https://olxclone.local/assets/images/logo.png",
+      "name": "Jualin",
+      "url": "https://jualin.local/",
+      "logo": "https://jualin.local/assets/images/logo.png",
       "sameAs": [
-        "https://facebook.com/olxclone",
-        "https://instagram.com/olxclone",
-        "https://twitter.com/olxclone"
+        "https://facebook.com/jualin",
+        "https://instagram.com/jualin",
+        "https://twitter.com/jualin"
       ]
     }
   </script>
@@ -236,8 +236,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Dinamis Dropdown -->
@@ -261,7 +261,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <?php if ($catFilter !== null): ?>
             <input type="hidden" name="c" value="<?php echo (int) $catFilter; ?>">
           <?php endif; ?>
@@ -355,7 +355,7 @@
         <div class="category-nav-expanded" id="category-nav-expanded" aria-hidden="true">
           <div class="category-nav-expanded-divider"></div>
           <div class="category-nav-expanded-heading">
-            <i class="fa-solid fa-layer-group"></i> Seluruh Kategori OLX Clone
+            <i class="fa-solid fa-layer-group"></i> Seluruh Kategori Jualin
           </div>
           <ul class="category-nav-expanded-list">
             <li>
@@ -697,7 +697,7 @@
 
         <!-- Kolom 1: Tentang -->
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -746,7 +746,7 @@
 
       <!-- Footer Bottom -->
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

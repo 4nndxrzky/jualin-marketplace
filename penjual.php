@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Profil / Toko Penjual Publik (penjual.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  *
  * Menampilkan seluruh etalase iklan yang telah diposting oleh penjual tertentu,
  * dilengkapi identitas penjual, kontak WhatsApp, serta kontrol pagination (limit 20).
@@ -38,7 +38,7 @@
     } elseif (str_starts_with($waClean, '8')) {
         $waClean = '62' . $waClean;
     }
-    $waMessage = "Halo " . $seller['name'] . ", saya melihat etalase iklan Anda di OLX Clone. Apakah barang-barang yang Anda jual masih tersedia?";
+    $waMessage = "Halo " . $seller['name'] . ", saya melihat etalase iklan Anda di Jualin. Apakah barang-barang yang Anda jual masih tersedia?";
     $waUrl     = "https://wa.me/{$waClean}?text=" . rawurlencode($waMessage);
     }
 
@@ -138,8 +138,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>Iklan dari <?php echo htmlspecialchars($seller['name'], ENT_QUOTES, 'UTF-8'); ?> — OLX Clone</title>
-  <meta name="description" content="Lihat seluruh etalase barang yang dijual oleh <?php echo htmlspecialchars($seller['name'], ENT_QUOTES, 'UTF-8'); ?> di OLX Clone. Belanja aman langsung dari penjual terpercaya.">
+  <title>Iklan dari <?php echo htmlspecialchars($seller['name'], ENT_QUOTES, 'UTF-8'); ?> — Jualin</title>
+  <meta name="description" content="Lihat seluruh etalase barang yang dijual oleh <?php echo htmlspecialchars($seller['name'], ENT_QUOTES, 'UTF-8'); ?> di Jualin. Belanja aman langsung dari penjual terpercaya.">
   <meta name="robots" content="index, follow">
 
   <!-- ==================== FAVICON ==================== -->
@@ -164,8 +164,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Auth Header Actions -->
@@ -404,7 +404,7 @@
 
         <!-- Kolom 1: Tentang -->
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -453,7 +453,7 @@
 
       <!-- Footer Bottom -->
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

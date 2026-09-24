@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Informasi: Pertanyaan Umum (faq.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  */
 
     session_start();
@@ -24,8 +24,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Frequently Asked Questions (FAQ) — OLX Clone</title>
-  <meta name="description" content="Temukan jawaban atas pertanyaan yang sering diajukan mengenai cara mendaftar, pasang iklan gratis, verifikasi akun, dan tips transaksi di OLX Clone.">
+  <title>Frequently Asked Questions (FAQ) — Jualin</title>
+  <meta name="description" content="Temukan jawaban atas pertanyaan yang sering diajukan mengenai cara mendaftar, pasang iklan gratis, verifikasi akun, dan tips transaksi di Jualin.">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -49,8 +49,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Selector Dinamis -->
@@ -74,7 +74,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -136,12 +136,12 @@
       <header class="info-header">
         <span class="info-header-badge"><i class="fa-solid fa-circle-question"></i> Tanya Jawab</span>
         <h1>Pertanyaan yang Sering Diajukan (FAQ)</h1>
-        <p>Temukan jawaban cepat atas pertanyaan seputar penggunaan platform jual beli OLX Clone.</p>
+        <p>Temukan jawaban cepat atas pertanyaan seputar penggunaan platform jual beli Jualin.</p>
       </header>
 
       <div class="info-body">
         <div class="info-faq-item">
-          <h4><i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> Apakah pasang iklan di OLX Clone gratis?</h4>
+          <h4><i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> Apakah pasang iklan di Jualin gratis?</h4>
           <p>Ya, seluruh pengguna terdaftar dapat memasang iklan barang baru maupun bekas secara 100% gratis tanpa dipungut biaya komisi transaksi.</p>
         </div>
 
@@ -173,7 +173,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -209,7 +209,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Informasi: Karir (karir.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  */
 
     session_start();
@@ -28,8 +28,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>Peluang Karir — OLX Clone</title>
-  <meta name="description" content="Bergabunglah dengan tim OLX Clone dan bangun ekosistem jual beli online terbaik di Indonesia. Temukan posisi karir yang sesuai dengan keahlian Anda.">
+  <title>Peluang Karir — Jualin</title>
+  <meta name="description" content="Bergabunglah dengan tim Jualin dan bangun ekosistem jual beli online terbaik di Indonesia. Temukan posisi karir yang sesuai dengan keahlian Anda.">
   <meta name="robots" content="index, follow">
 
   <!-- ==================== FAVICON ==================== -->
@@ -54,8 +54,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Selector Dinamis -->
@@ -79,7 +79,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -140,13 +140,13 @@
     <article class="info-card">
       <header class="info-header">
         <span class="info-header-badge"><i class="fa-solid fa-briefcase"></i> Rekrutmen & Talenta</span>
-        <h1>Karir di OLX Clone</h1>
+        <h1>Karir di Jualin</h1>
         <p>Mari bertumbuh bersama tim berbakat yang berdedikasi menciptakan pengalaman jual beli digital terbaik di Indonesia.</p>
       </header>
 
       <div class="info-body">
         <h2><i class="fa-solid fa-handshake" style="color: var(--primary);"></i> Mengapa Bergabung Bersama Kami?</h2>
-        <p>Di OLX Clone, setiap talenta diberikan kebebasan berinovasi, bereksplorasi dengan arsitektur teknologi modern, serta berkontribusi nyata dalam memberdayakan jutaan transaksi ekonomi kerakyatan.</p>
+        <p>Di Jualin, setiap talenta diberikan kebebasan berinovasi, bereksplorasi dengan arsitektur teknologi modern, serta berkontribusi nyata dalam memberdayakan jutaan transaksi ekonomi kerakyatan.</p>
 
         <div class="info-grid-cards">
           <div class="info-subcard">
@@ -167,7 +167,7 @@
         </div>
 
         <h2><i class="fa-solid fa-envelope-open-text" style="color: var(--primary);"></i> Cara Melamar</h2>
-        <p>Kirimkan CV terbaru dan portofolio proyek Anda ke email <strong>recruitment@olxclone.local</strong> dengan subjek format <code>[Posisi] - Nama Lengkap</code>. Tim People Operations kami akan meninjau berkas Anda dalam waktu 3 hari kerja.</p>
+        <p>Kirimkan CV terbaru dan portofolio proyek Anda ke email <strong>recruitment@jualin.local</strong> dengan subjek format <code>[Posisi] - Nama Lengkap</code>. Tim People Operations kami akan meninjau berkas Anda dalam waktu 3 hari kerja.</p>
       </div>
     </article>
   </main>
@@ -177,7 +177,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -213,7 +213,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

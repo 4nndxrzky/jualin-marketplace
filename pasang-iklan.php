@@ -208,28 +208,28 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>Pasang Iklan Gratis — Jual Cepat Barang Bekas & Baru | OLX Clone</title>
-  <meta name="description" content="Pasang iklan gratis di OLX Clone sekarang! Jual mobil, motor, properti, HP, laptop, perabotan, dan jasa dengan mudah ke jutaan calon pembeli di seluruh Indonesia.">
-  <meta name="keywords" content="pasang iklan gratis, jual barang bekas, pasang iklan OLX, jual mobil, jual motor, jual properti, pasang iklan online">
-  <meta name="author" content="OLX Clone">
+  <title>Pasang Iklan Gratis — Jual Cepat Barang Bekas & Baru | Jualin</title>
+  <meta name="description" content="Pasang iklan gratis di Jualin sekarang! Jual mobil, motor, properti, HP, laptop, perabotan, dan jasa dengan mudah ke jutaan calon pembeli di seluruh Indonesia.">
+  <meta name="keywords" content="pasang iklan gratis, jual barang bekas, pasang iklan Jualin, jual mobil, jual motor, jual properti, pasang iklan online">
+  <meta name="author" content="Jualin">
   <!-- Best Practice SEO: noindex, follow untuk halaman formulir pasang iklan agar bot crawler tidak mengindeks form kosong -->
   <meta name="robots" content="noindex, follow">
-  <link rel="canonical" href="https://olxclone.local/pasang-iklan.php">
+  <link rel="canonical" href="https://jualin.local/pasang-iklan.php">
 
   <!-- ==================== OPEN GRAPH (Social Media Preview) ==================== -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Pasang Iklan Gratis — OLX Clone">
-  <meta property="og:description" content="Punya barang nganggur? Jual cepat sekarang di OLX Clone. Gratis dan mudah!">
-  <meta property="og:url" content="https://olxclone.local/pasang-iklan.php">
-  <meta property="og:image" content="https://olxclone.local/assets/images/og-preview.jpg">
-  <meta property="og:site_name" content="OLX Clone">
+  <meta property="og:title" content="Pasang Iklan Gratis — Jualin">
+  <meta property="og:description" content="Punya barang nganggur? Jual cepat sekarang di Jualin. Gratis dan mudah!">
+  <meta property="og:url" content="https://jualin.local/pasang-iklan.php">
+  <meta property="og:image" content="https://jualin.local/assets/images/og-preview.jpg">
+  <meta property="og:site_name" content="Jualin">
   <meta property="og:locale" content="id_ID">
 
   <!-- ==================== TWITTER CARD ==================== -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Pasang Iklan Gratis — OLX Clone">
+  <meta name="twitter:title" content="Pasang Iklan Gratis — Jualin">
   <meta name="twitter:description" content="Pasang iklan jual beli online gratis dan jangkau jutaan pembeli terdekat.">
-  <meta name="twitter:image" content="https://olxclone.local/assets/images/og-preview.jpg">
+  <meta name="twitter:image" content="https://jualin.local/assets/images/og-preview.jpg">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -241,9 +241,9 @@
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Pasang Iklan Gratis — OLX Clone",
-      "url": "https://olxclone.local/pasang-iklan.php",
-      "description": "Formulir pemasangan iklan jual beli barang baru dan bekas di OLX Clone.",
+      "name": "Pasang Iklan Gratis — Jualin",
+      "url": "https://jualin.local/pasang-iklan.php",
+      "description": "Formulir pemasangan iklan jual beli barang baru dan bekas di Jualin.",
       "breadcrumb": {
         "@type": "BreadcrumbList",
         "itemListElement": [
@@ -251,13 +251,13 @@
             "@type": "ListItem",
             "position": 1,
             "name": "Beranda",
-            "item": "https://olxclone.local/"
+            "item": "https://jualin.local/"
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Pasang Iklan",
-            "item": "https://olxclone.local/pasang-iklan.php"
+            "item": "https://jualin.local/pasang-iklan.php"
           }
         ]
       }
@@ -281,8 +281,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Auth Action Navigasi -->
@@ -585,7 +585,7 @@
               <input type="checkbox" id="agree_rules" name="agree_rules" value="1" required aria-required="true">
               <span>
                 Saya menyatakan bahwa barang ini adalah milik sah saya dan menyetujui
-                <a href="syarat-ketentuan.php" target="_blank" rel="noopener">Syarat & Ketentuan Pasang Iklan</a> di OLX Clone.
+                <a href="syarat-ketentuan.php" target="_blank" rel="noopener">Syarat & Ketentuan Pasang Iklan</a> di Jualin.
               </span>
             </label>
 
@@ -627,7 +627,7 @@
               <span class="tips-num">3</span>
               <div>
                 <strong>Harga Kompetitif:</strong>
-                <p>Cek harga pasaran barang serupa di OLX agar harga yang Anda pasang menarik pembeli.</p>
+                <p>Cek harga pasaran barang serupa di Jualin agar harga yang Anda pasang menarik pembeli.</p>
               </div>
             </li>
             <li>
@@ -647,7 +647,7 @@
             <li>Dilarang menjual barang ilegal, palsu/replika, senjata tajam, obat terlarang, atau hewan dilindungi.</li>
             <li>Dilarang membuat iklan ganda (<em>spam duplikasi</em>) untuk satu produk yang sama.</li>
             <li>Pastikan nomor WhatsApp dan chat aktif untuk merespons calon pembeli dengan cepat.</li>
-            <li>OLX Clone berhak menghapus iklan yang melanggar kebijakan marketplace tanpa pemberitahuan.</li>
+            <li>Jualin berhak menghapus iklan yang melanggar kebijakan marketplace tanpa pemberitahuan.</li>
           </ul>
         </div>
 
@@ -667,7 +667,7 @@
 
         <!-- Kolom 1: Tentang -->
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -713,7 +713,7 @@
 
       <!-- Footer Bottom -->
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> ·
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> ·

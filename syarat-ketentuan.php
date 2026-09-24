@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Legal: Syarat & Ketentuan (syarat-ketentuan.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  */
 
     session_start();
@@ -24,8 +24,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Syarat & Ketentuan Layanan — OLX Clone</title>
-  <meta name="description" content="Ketahui syarat dan ketentuan penggunaan layanan marketplace OLX Clone, hak serta tanggung jawab penjual dan pembeli.">
+  <title>Syarat & Ketentuan Layanan — Jualin</title>
+  <meta name="description" content="Ketahui syarat dan ketentuan penggunaan layanan marketplace Jualin, hak serta tanggung jawab penjual dan pembeli.">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -49,8 +49,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Selector Dinamis -->
@@ -74,7 +74,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -135,13 +135,13 @@
     <article class="info-card">
       <header class="info-header">
         <span class="info-header-badge"><i class="fa-solid fa-scale-balanced"></i> Ketentuan Hukum</span>
-        <h1>Syarat & Ketentuan Layanan OLX Clone</h1>
+        <h1>Syarat & Ketentuan Layanan Jualin</h1>
         <p>Pembaruan Terakhir: 23 September 2026. Harap membaca seluruh ketentuan ini dengan saksama sebelum menggunakan platform.</p>
       </header>
 
       <div class="info-body">
         <h2><i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> 1. Ketentuan Umum Akun</h2>
-        <p>Dengan mendaftar akun di OLX Clone, Anda menyatakan telah berusia sekurang-kurangnya 18 tahun atau telah cakap menurut hukum Indonesia untuk melakukan perikatan jual beli. Anda bertanggung jawab penuh atas kerahasiaan kata sandi dan seluruh aktivitas yang terjadi dalam akun Anda.</p>
+        <p>Dengan mendaftar akun di Jualin, Anda menyatakan telah berusia sekurang-kurangnya 18 tahun atau telah cakap menurut hukum Indonesia untuk melakukan perikatan jual beli. Anda bertanggung jawab penuh atas kerahasiaan kata sandi dan seluruh aktivitas yang terjadi dalam akun Anda.</p>
 
         <h2><i class="fa-solid fa-ban" style="color: var(--danger);"></i> 2. Barang yang Dilarang Diperjualbelikan</h2>
         <p>Pengguna dilarang keras mengunggah listing iklan yang memuat atau menawarkan:</p>
@@ -157,7 +157,7 @@
         <p>Penjual wajib menyajikan informasi yang jujur, akurat, dan tidak menyesatkan mengenai kondisi fisik, fungsi, dan riwayat barang. Foto yang diunggah harus merupakan foto asli barang yang dimiliki, bukan hasil tangkapan layar toko lain.</p>
 
         <h2><i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> 4. Batasan Tanggung Jawab Platform</h2>
-        <p>OLX Clone bertindak sebagai sarana temu perantara antara penjual dan pembeli secara mandiri. Kesepakatan harga, pembayaran, dan penyerahan barang merupakan tanggung jawab penuh antara kedua belah pihak yang bertransaksi.</p>
+        <p>Jualin bertindak sebagai sarana temu perantara antara penjual dan pembeli secara mandiri. Kesepakatan harga, pembayaran, dan penyerahan barang merupakan tanggung jawab penuh antara kedua belah pihak yang bertransaksi.</p>
       </div>
     </article>
   </main>
@@ -167,7 +167,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -203,7 +203,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

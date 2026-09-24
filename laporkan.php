@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Informasi & Formulir: Laporkan Iklan (laporkan.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  */
 
     session_start();
@@ -37,8 +37,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laporkan Iklan Mencurigakan — OLX Clone</title>
-  <meta name="description" content="Formulir pengaduan resmi untuk melaporkan iklan penipuan, konten terlarang, atau spam di OLX Clone demi keamanan komunitas kita.">
+  <title>Laporkan Iklan Mencurigakan — Jualin</title>
+  <meta name="description" content="Formulir pengaduan resmi untuk melaporkan iklan penipuan, konten terlarang, atau spam di Jualin demi keamanan komunitas kita.">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -62,8 +62,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Selector Dinamis -->
@@ -87,7 +87,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -149,7 +149,7 @@
       <header class="info-header">
         <span class="info-header-badge" style="background-color: rgba(220, 53, 69, 0.1); color: var(--danger);"><i class="fa-solid fa-flag"></i> Pengaduan Komunitas</span>
         <h1>Formulir Pengaduan Iklan</h1>
-        <p>Bantu kami menjaga OLX Clone tetap aman dan tepercaya. Laporan Anda akan ditinjau secara rahasia oleh tim Trust & Safety kami.</p>
+        <p>Bantu kami menjaga Jualin tetap aman dan tepercaya. Laporan Anda akan ditinjau secara rahasia oleh tim Trust & Safety kami.</p>
       </header>
 
       <div class="info-body">
@@ -208,7 +208,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -244,7 +244,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

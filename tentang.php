@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Informasi: Tentang Kami (tentang.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  */
 
     session_start();
@@ -30,8 +30,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>Tentang Kami — OLX Clone | Platform Jual Beli Cepat & Terpercaya</title>
-  <meta name="description" content="Kenali lebih dekat OLX Clone, platform jual beli online terpercaya di Indonesia. Dibuat dengan arsitektur PHP Native dan MySQL performa tinggi.">
+  <title>Tentang Kami — Jualin | Platform Jual Beli Cepat & Terpercaya</title>
+  <meta name="description" content="Kenali lebih dekat Jualin, platform jual beli online terpercaya di Indonesia. Dibuat dengan arsitektur PHP Native dan MySQL performa tinggi.">
   <meta name="robots" content="index, follow">
 
   <!-- ==================== FAVICON ==================== -->
@@ -56,8 +56,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Selector Dinamis -->
@@ -81,7 +81,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -142,13 +142,13 @@
     <article class="info-card">
       <header class="info-header">
         <span class="info-header-badge"><i class="fa-solid fa-circle-info"></i> Profil Platform</span>
-        <h1>Tentang OLX Clone</h1>
+        <h1>Tentang Jualin</h1>
         <p>Solusi marketplace jual beli barang bekas dan baru yang cepat, aman, dan mudah digunakan di seluruh pelosok Indonesia.</p>
       </header>
 
       <div class="info-body">
         <h2><i class="fa-solid fa-bullseye" style="color: var(--primary);"></i> Visi & Misi Kami</h2>
-        <p>OLX Clone hadir untuk memfasilitasi transaksi jual beli lokal yang transparan dan dapat diakses oleh siapa saja. Kami percaya bahwa setiap barang memiliki nilai guna berkelanjutan, dan menghubungkan pemilik barang dengan pembeli yang membutuhkan adalah langkah nyata menuju gaya hidup ekonomis dan ramah lingkungan.</p>
+        <p>Jualin hadir untuk memfasilitasi transaksi jual beli lokal yang transparan dan dapat diakses oleh siapa saja. Kami percaya bahwa setiap barang memiliki nilai guna berkelanjutan, dan menghubungkan pemilik barang dengan pembeli yang membutuhkan adalah langkah nyata menuju gaya hidup ekonomis dan ramah lingkungan.</p>
 
         <div class="info-grid-cards">
           <div class="info-subcard">
@@ -169,7 +169,7 @@
         </div>
 
         <h2><i class="fa-solid fa-code" style="color: var(--primary);"></i> Arsitektur & Teknologi</h2>
-        <p>Website OLX Clone ini dibangun sebagai implementasi praktis standar industri pembelajaran pada Kelas Fullstack Codepolitan. Mengusung arsitektur <strong>PHP Native & MySQL</strong> berbasis Prepared Statements PDO, sistem ini mengedepankan keamanan SQL injection prevention, pemrosesan berkas modular, serta tata letak responsif murni tanpa framework CSS eksternal.</p>
+        <p>Website Jualin ini dibangun sebagai implementasi praktis standar industri pembelajaran pada Kelas Fullstack Codepolitan. Mengusung arsitektur <strong>PHP Native & MySQL</strong> berbasis Prepared Statements PDO, sistem ini mengedepankan keamanan SQL injection prevention, pemrosesan berkas modular, serta tata letak responsif murni tanpa framework CSS eksternal.</p>
       </div>
     </article>
   </main>
@@ -179,7 +179,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -215,7 +215,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

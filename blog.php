@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Informasi: Blog & Tips (blog.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  */
 
     session_start();
@@ -24,8 +24,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog & Panduan Otomotif, Properti, Gadget — OLX Clone</title>
-  <meta name="description" content="Baca kumpulan artikel, tips inspeksi kendaraan, panduan transaksi properti, dan rekomendasi gadget bekas berkualitas di Blog OLX Clone.">
+  <title>Blog & Panduan Otomotif, Properti, Gadget — Jualin</title>
+  <meta name="description" content="Baca kumpulan artikel, tips inspeksi kendaraan, panduan transaksi properti, dan rekomendasi gadget bekas berkualitas di Blog Jualin.">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -49,8 +49,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Selector Dinamis -->
@@ -74,7 +74,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -135,7 +135,7 @@
     <article class="info-card">
       <header class="info-header">
         <span class="info-header-badge"><i class="fa-solid fa-newspaper"></i> Wawasan & Berita</span>
-        <h1>Blog OLX Clone</h1>
+        <h1>Blog Jualin</h1>
         <p>Tips cerdas, panduan inspeksi barang, tren harga pasar, dan kiat sukses transaksi online dari para ahli.</p>
       </header>
 
@@ -164,7 +164,7 @@
         </div>
 
         <h2><i class="fa-solid fa-tag" style="color: var(--primary);"></i> Menemukan Harga Pasar yang Ideal</h2>
-        <p>Salah satu kunci sukses menjual barang dalam hitungan hari adalah menetapkan harga kompetitif. Gunakan fitur filter pencarian di OLX Clone untuk membandingkan rata-rata harga produk sejenis dengan kondisi setara di wilayah kota Anda sebelum menentukan harga penawaran.</p>
+        <p>Salah satu kunci sukses menjual barang dalam hitungan hari adalah menetapkan harga kompetitif. Gunakan fitur filter pencarian di Jualin untuk membandingkan rata-rata harga produk sejenis dengan kondisi setara di wilayah kota Anda sebelum menentukan harga penawaran.</p>
       </div>
     </article>
   </main>
@@ -174,7 +174,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -210,7 +210,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;

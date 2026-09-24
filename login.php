@@ -85,27 +85,27 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- ==================== SEO META TAGS ==================== -->
-  <title>Masuk ke Akun — OLX Clone</title>
-  <meta name="description" content="Masuk ke akun OLX Clone untuk memasang iklan gratis, mengelola listing jual beli, serta chat langsung dengan calon pembeli terpercaya.">
-  <meta name="keywords" content="login OLX Clone, masuk akun, jual beli online, pasang iklan gratis">
-  <meta name="author" content="OLX Clone">
+  <title>Masuk ke Akun — Jualin</title>
+  <meta name="description" content="Masuk ke akun Jualin untuk memasang iklan gratis, mengelola listing jual beli, serta chat langsung dengan calon pembeli terpercaya.">
+  <meta name="keywords" content="login Jualin, masuk akun, jual beli online, pasang iklan gratis">
+  <meta name="author" content="Jualin">
   <!-- Best Practice SEO: noindex, follow untuk halaman autentikasi -->
   <meta name="robots" content="noindex, follow">
-  <link rel="canonical" href="https://olxclone.local/login.php">
+  <link rel="canonical" href="https://jualin.local/login.php">
 
   <!-- ==================== OPEN GRAPH ==================== -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Masuk ke Akun — OLX Clone">
-  <meta property="og:description" content="Masuk ke akun OLX Clone Anda untuk mulai jual beli barang bekas dan baru dengan mudah dan aman.">
-  <meta property="og:url" content="https://olxclone.local/login.php">
+  <meta property="og:title" content="Masuk ke Akun — Jualin">
+  <meta property="og:description" content="Masuk ke akun Jualin Anda untuk mulai jual beli barang bekas dan baru dengan mudah dan aman.">
+  <meta property="og:url" content="https://jualin.local/login.php">
   <meta property="og:image" content="assets/images/og-preview.jpg">
-  <meta property="og:site_name" content="OLX Clone">
+  <meta property="og:site_name" content="Jualin">
   <meta property="og:locale" content="id_ID">
 
   <!-- ==================== TWITTER CARD ==================== -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Masuk ke Akun — OLX Clone">
-  <meta name="twitter:description" content="Masuk ke akun OLX Clone Anda untuk mengelola iklan dan pesan jual beli.">
+  <meta name="twitter:title" content="Masuk ke Akun — Jualin">
+  <meta name="twitter:description" content="Masuk ke akun Jualin Anda untuk mengelola iklan dan pesan jual beli.">
   <meta name="twitter:image" content="assets/images/og-preview.jpg">
 
   <!-- ==================== FAVICON ==================== -->
@@ -118,9 +118,9 @@
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Masuk ke Akun — OLX Clone",
-      "url": "https://olxclone.local/login.php",
-      "description": "Halaman otentikasi masuk pengguna terdaftar OLX Clone.",
+      "name": "Masuk ke Akun — Jualin",
+      "url": "https://jualin.local/login.php",
+      "description": "Halaman otentikasi masuk pengguna terdaftar Jualin.",
       "breadcrumb": {
         "@type": "BreadcrumbList",
         "itemListElement": [
@@ -128,13 +128,13 @@
             "@type": "ListItem",
             "position": 1,
             "name": "Beranda",
-            "item": "https://olxclone.local/"
+            "item": "https://jualin.local/"
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Masuk Akun",
-            "item": "https://olxclone.local/login.php"
+            "item": "https://jualin.local/login.php"
           }
         ]
       }
@@ -158,8 +158,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Auth Action Navigasi -->
@@ -284,7 +284,7 @@
 
         <!-- Link Navigasi Daftar Akun Baru -->
         <p class="auth-footer-text">
-          Belum punya akun OLX Clone?
+          Belum punya akun Jualin?
           <a href="register.php">Daftar Akun Baru</a>
         </p>
 
@@ -298,7 +298,7 @@
         <p class="auth-disclaimer">
           Dengan mengklik "Masuk", Anda menyetujui
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> dan
-          <a href="kebijakan-privasi.php">Kebijakan Privasi</a> OLX Clone.
+          <a href="kebijakan-privasi.php">Kebijakan Privasi</a> Jualin.
         </p>
 
       </section>
@@ -317,7 +317,7 @@
 
         <!-- Kolom 1: Tentang -->
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -363,7 +363,7 @@
 
       <!-- Footer Bottom -->
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> ·
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> ·

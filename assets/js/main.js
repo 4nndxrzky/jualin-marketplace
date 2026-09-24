@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * OLX CLONE — CLIENT-SIDE JAVASCRIPT (VANILLA JS)
+ * Jualin — CLIENT-SIDE JAVASCRIPT (VANILLA JS)
  * Mendukung interaktivitas:
  * 1. Toggle Password Visibility (Login & Register)
  * 2. Real-time Password Match & Validation (Register)

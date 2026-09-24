@@ -1,7 +1,7 @@
 <?php
     /**
  * Halaman Informasi: Panduan Jual Beli (panduan.php)
- * OLX Clone - Codepolitan
+ * Jualin - Codepolitan
  */
 
     session_start();
@@ -24,8 +24,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panduan Lengkap Jual Beli — OLX Clone</title>
-  <meta name="description" content="Langkah praktis cara menjual barang agar cepat laku dan tips pintar membeli barang berkualitas dengan harga terbaik di OLX Clone.">
+  <title>Panduan Lengkap Jual Beli — Jualin</title>
+  <meta name="description" content="Langkah praktis cara menjual barang agar cepat laku dan tips pintar membeli barang berkualitas dengan harga terbaik di Jualin.">
 
   <!-- ==================== FAVICON ==================== -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -49,8 +49,8 @@
       <div class="header-top">
 
         <!-- Logo -->
-        <a href="index.php" class="logo" aria-label="OLX Clone - Halaman Utama">
-          OLX<span>Clone</span>
+        <a href="index.php" class="logo" aria-label="Jualin - Halaman Utama">
+          Jual<span>in</span>
         </a>
 
         <!-- Lokasi Selector Dinamis -->
@@ -74,7 +74,7 @@
 
         <!-- Search Bar -->
         <form class="search-form" action="index.php" method="GET" role="search" aria-label="Cari iklan">
-          <label for="search-input" class="sr-only">Cari di OLX Clone</label>
+          <label for="search-input" class="sr-only">Cari di Jualin</label>
           <input type="search" id="search-input" name="q" placeholder="Cari mobil, HP, properti, dan lainnya..." autocomplete="off">
           <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -135,7 +135,7 @@
     <article class="info-card">
       <header class="info-header">
         <span class="info-header-badge"><i class="fa-solid fa-book-open"></i> Pedoman Pengguna</span>
-        <h1>Panduan Jual Beli di OLX Clone</h1>
+        <h1>Panduan Jual Beli di Jualin</h1>
         <p>Ikuti panduan ringkas berikut untuk pengalaman jual beli yang lancar, efisien, dan menguntungkan.</p>
       </header>
 
@@ -144,7 +144,7 @@
         <ol>
           <li><strong>Gunakan Judul Deskriptif:</strong> Tuliskan merek, tipe barang, tahun pembuatan, dan kondisi utama secara jelas dalam 50 karakter (contoh: <em>Toyota Avanza 1.3 G MT 2020 Putih Mulus</em>).</li>
           <li><strong>Unggah Foto Berkualitas:</strong> Foto barang dari minimal 3 sudut (tampak depan, samping, dan detail kelengkapan/minus jika ada).</li>
-          <li><strong>Harga yang Realistis:</strong> Bandingkan harga barang serupa di OLX Clone sebelum menetapkan harga jual Anda.</li>
+          <li><strong>Harga yang Realistis:</strong> Bandingkan harga barang serupa di Jualin sebelum menetapkan harga jual Anda.</li>
           <li><strong>Pastikan WhatsApp Aktif:</strong> Lengkapi nomor WhatsApp pada profil Anda agar calon pembeli dapat langsung menawar dan membuat janji bertemu.</li>
         </ol>
 
@@ -169,7 +169,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h3>OLX Clone</h3>
+          <h3>Jualin</h3>
           <ul>
             <li><a href="tentang.php">Tentang Kami</a></li>
             <li><a href="karir.php">Karir</a></li>
@@ -205,7 +205,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2026 OLX Clone. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
+        <p>&copy; 2026 Jualin. Dibuat untuk belajar di Kelas Fullstack Codepolitan.</p>
         <nav aria-label="Footer legal">
           <a href="syarat-ketentuan.php">Syarat & Ketentuan</a> &middot;
           <a href="kebijakan-privasi.php">Kebijakan Privasi</a> &middot;
